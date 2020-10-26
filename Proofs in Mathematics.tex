@@ -1,0 +1,3083 @@
+\documentclass[11pt,twoside,openany,x11names,svgnames]{memoir}
+\usepackage[margin=1in]{geometry}  % set the margins to 1in on all sides
+\usepackage[T1]{fontenc}
+\usepackage{verbatim}  % Needed for the "comment" environment to make LaTeX comments
+\usepackage{lmodern}
+\usepackage[ISBN=978-80-85955-35-4]{ean13isbn}
+\usepackage{wallpaper}
+\usepackage{tikz}
+\usetikzlibrary{shapes,shadows,snakes,positioning,backgrounds}
+\usepackage{amsmath,amsfonts,amsthm,amssymb,amscd,xspace}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{graphicx,xcolor,lipsum,cancel}
+\usepackage{microtype}
+\usepackage{hyperref}
+\hypersetup{colorlinks,linkcolor={blue},citecolor={blue},urlcolor={red}}
+\usepackage{kpfonts}
+\newcommand\hcancel[2][black]{\setbox0=\hbox{$#2$}%
+\rlap{\raisebox{.45\ht0}{\textcolor{#1}{\rule{\wd0}{1pt}}}}#2}
+%% Custom stock paper and page size
+\setstocksize{303mm}{216mm}
+\settrimmedsize{\stockheight}{\stockwidth}{*}
+
+
+% various theorems, numbered by section
+\usepackage[listings,theorems]{tcolorbox}
+
+\newcounter{mytheorem}[section]
+\def\themytheorem{\thesection}
+\tcbset{
+defstyle/.style={fonttitle=\bfseries\upshape, fontupper=\slshape,
+arc=0mm, colback=blue!5,colframe=blue!75!black},
+theostyle/.style={fonttitle=\bfseries\upshape, fontupper=\slshape,
+colback=red!10,colframe=DarkGreen!75!black},
+corstyle/.style={fonttitle=\bfseries\upshape, fontupper=\slshape,
+colback=red!10,colframe=orange!75!black},
+lemstyle/.style={fonttitle=\bfseries\upshape, fontupper=\slshape,
+colback=red!10,colframe=green!75!black},
+remstyle/.style={fonttitle=\bfseries\upshape, fontupper=\slshape,
+colback=red!10,colframe=red!75!black},
+notstyle/.style={fonttitle=\bfseries\upshape, fontupper=\slshape,
+colback=red!10,colframe=purple!75!black},
+}
+\tcbmaketheorem{Definition}{Definition}{defstyle}{mytheorem}{def}
+\tcbmaketheorem{Lemma}{Lemma}{lemstyle}{mytheorem}{lem}
+\tcbmaketheorem{Theorem}{Theorem}{theostyle}{mytheorem}{theo}
+\tcbmaketheorem{Corollary}{Corollary}{corstyle}{mytheorem}{cor}
+\tcbmaketheorem{Notation}{Notation}{notstyle}{mytheorem}{notns}
+\tcbmaketheorem{Remark}{Remark}{remstyle}{mytheorem}{rem}
+\tcbmaketheorem{Example}{Example}{remstyle}{mytheorem}{exmp}
+%% Adjust margins around typeblock
+\setlrmarginsandblock{23mm}{18mm}{*}
+\setulmarginsandblock{23mm}{23mm}{*}
+
+%% Header and footer heights
+\setheadfoot{\baselineskip}{10mm}
+\setlength\headsep{7mm}
+
+%% To apply and enforce layout
+\checkandfixthelayout
+
+%% Command to hold chapter illustration image
+\newcommand\chapterillustration{}
+
+%% Define a fancy chapter style
+\makechapterstyle{FancyChap}{
+%% Vertical Space before main text starts
+\setlength\beforechapskip{0pt}
+\setlength\midchapskip{0pt}
+\setlength\afterchapskip{137mm}
+%% Will print chapter number and title
+%% in one go ourselves
+\renewcommand*\printchaptername{}
+\renewcommand*\printchapternum{}
+%%% Re-define how the chapter title is printed
+\def\printchaptertitle##1{
+%% Background image at top of page
+\ThisULCornerWallPaper{1}{\chapterillustration}
+%% Draw a semi-transparent rectangle across the top
+\tikz[overlay,remember picture]
+  \fill[fill=LightSalmon1,opacity=.7]
+  (current page.north west) rectangle
+  ([yshift=-3cm] current page.north east);
+  %% Check if on an odd or even page
+  \strictpagecheck\checkoddpage
+  %% On odd pages, "logo" image at lower right
+  %% corner; Chapter number printed near spine
+  %% edge (near the left); chapter title printed
+  %% near outer edge (near the right).
+  \ifoddpage{
+    \ThisLRCornerWallPaper{.35}{fern_mo_01.jpg}
+    \begin{tikzpicture}[overlay,remember picture]
+    \node[anchor=south west,
+      xshift=20mm,yshift=-30mm,
+      font=\sffamily\bfseries\huge]
+      at (current page.north west)
+      {\chaptername\chapternamenum\thechapter};
+    \node[fill=Sienna!80!black,text=white,
+      font=\Huge\bfseries,
+      inner ysep=12pt, inner xsep=20pt,
+      rounded rectangle,anchor=east,
+      xshift=-20mm,yshift=-30mm]
+      at (current page.north east) {##1};
+    \end{tikzpicture}
+  }
+  %% On even pages, "logo" image at lower left
+  %% corner; Chapter number printed near outer
+  %% edge (near the right); chapter title printed
+  %% near spine edge (near the left).
+  \else {
+    \ThisLLCornerWallPaper{.35}{fern_mo_01.jpg}
+    \begin{tikzpicture}[overlay,remember picture]
+    \node[anchor=south east,
+      xshift=-20mm,yshift=-30mm,
+      font=\sffamily\bfseries\huge]
+      at (current page.north east)
+      {\chaptername\chapternamenum\thechapter};
+    \node[fill=Sienna!80!black,text=white,
+      font=\Huge\bfseries,
+      inner sep=12pt, inner xsep=20pt,
+      rounded rectangle,anchor=west,
+      xshift=20mm,yshift=-30mm]
+      at ( current page.north west) {##1};
+    \end{tikzpicture}
+  }
+  \fi }}
+
+
+%% Define a fancy chapter style for unnumbered
+%% chapters (e.g. the Table of Contents)
+\makechapterstyle{FancyUnnumberedChap}{
+%% Vertical Space before main text starts
+\setlength\beforechapskip{0pt}
+\setlength\midchapskip{0pt}
+\setlength\afterchapskip{47mm}
+%% Will print chapter number and title
+%% in one go ourselves
+\renewcommand*\printchaptername{}
+\renewcommand*\printchapternum{}
+%%% Re-define how the chapter title is printed
+\def\printchaptertitle##1{
+%% Draw a semi-transparent rectangle across the top
+\tikz[overlay,remember picture]
+  \fill[fill=LightSalmon1,opacity=.7]
+  (current page.north west) rectangle
+  ([yshift=-3cm] current page.north east);
+  %% Check if on an odd or even page
+  \strictpagecheck\checkoddpage
+  \ifoddpage{
+    \begin{tikzpicture}[remember picture, overlay]
+    \node[fill=Sienna!80!black,text=white,
+      font=\Huge\bfseries,
+      inner ysep=12pt, inner xsep=20pt,
+      rounded rectangle,anchor=east,
+      xshift=-20mm,yshift=-30mm]
+      at (current page.north east) {##1};
+    \end{tikzpicture}
+  }
+  \else {
+    \begin{tikzpicture}[remember picture, overlay]
+    \node[fill=Sienna!80!black,text=white,
+      font=\Huge\bfseries,
+      inner sep=12pt, inner xsep=20pt,
+      rounded rectangle,anchor=west,
+      xshift=20mm,yshift=-30mm]
+      at ( current page.north west) {##1};
+    \end{tikzpicture}
+  }
+  \fi
+}
+}
+
+
+%% Set the uniform width of the colour box
+%% displaying the page number in footer
+%% to the width of "99"
+\newlength\pagenumwidth
+\settowidth{\pagenumwidth}{99}
+
+%% Define style of page number colour box
+\tikzset{pagefooter/.style={
+anchor=base,font=\sffamily\bfseries\small,
+text=white,fill=Sienna!80!black,text centered,
+text depth=17mm,text width=\pagenumwidth}}
+
+%% Concoct some colours of our own
+\definecolor[named]{GreenTea}{HTML}{CAE8A2}
+\definecolor[named]{MilkTea}{HTML}{C5A16F}
+
+%% Sometimes I prefer not to upper-case my
+%% running headers
+\nouppercaseheads
+
+%%%%%%%%%%
+%%% Re-define running headers on non-chapter odd pages
+%%%%%%%%%%
+\makeoddhead{headings}
+%% Left header is empty but I'm using it as a hook to paint the
+%% background rectangles underneath everything else
+{\begin{tikzpicture}[remember picture,overlay]
+\fill[MilkTea!25!white] (current page.north east)
+	rectangle (current page.south west);
+\fill[white, rounded corners]
+	([xshift=-10mm,yshift=-20mm]current page.north east) rectangle 	
+	([xshift=15mm,yshift=17mm]current page.south west);
+\end{tikzpicture}}%
+%% Blank centre header
+{}%
+%% Display a decorate line and the right mark (chapter title)
+%% at right end
+{\begin{tikzpicture}[xshift=-.75\baselineskip,yshift=.25\baselineskip,remember picture, overlay,fill=GreenTea,draw=GreenTea]\fill circle(3pt);\draw[semithick](0,0) -- (current page.west |- 0,0);\end{tikzpicture}\sffamily\itshape\small\rightmark}
+
+\newcommand\listnomenclature{Notations}
+\usepackage{longtable}
+\newcommand\listofnomenclature[2]{
+\begin{longtable}[c]{#1}#2\end{longtable}\par
+    \cleardoublepage
+}
+
+%%%%%%%%%%
+%%% Re-define running footers on odd pages
+%%% i.e. display the page number on the right
+%%%%%%%%%%
+\makeoddfoot{headings}{}{}{%
+\tikz[baseline]\node[pagefooter]{\thepage};}
+\makeoddfoot{plain}{}{}{\tikz[baseline]\node[pagefooter]{\thepage};}
+
+%%%%%%%%%%
+%%% Re-define running headers on non-chapter even pages
+%%%%%%%%%%
+\makeevenhead{headings}
+%% Draw the background rectangles; then the left mark (section
+%% title) and the decorate line
+{{\begin{tikzpicture}[remember picture,overlay]
+\fill[MilkTea!25!white] (current page.north east) rectangle (current page.south west);
+\fill[white, rounded corners] ([xshift=-15mm,yshift=-20mm]current page.north east) rectangle ([xshift=10mm,yshift=17mm]current page.south west);
+\end{tikzpicture}}%
+\sffamily\itshape\small\leftmark\
+\begin{tikzpicture}[xshift=.5\baselineskip,yshift=.25\baselineskip,remember picture, overlay,fill=GreenTea,draw=GreenTea]\fill (0,0) circle (3pt); \draw[semithick](0,0) -- (current page.east |- 0,0 );\end{tikzpicture}}{}{}
+\makeevenfoot{headings}{\tikz[baseline]\node[pagefooter]{\thepage};}{}{}
+\makeevenfoot{plain}{\tikz[baseline]\node[pagefooter]{\thepage};}
+%% Empty centre and right headers on even pages
+{}{}
+
+\begin{document}
+
+\frontmatter
+
+%%%%%%%%%%%%%%
+%% Cover page
+%%%%%%%%%%%%%%
+
+%% No header nor footer on the cover
+\thispagestyle{empty}
+
+%% Cover illustration
+\ThisLLCornerWallPaper{1}{Leonhard}
+
+%% Bar across the top
+\tikz[remember picture,overlay]%
+\node[fill=Sienna,text=white,font=\LARGE\bfseries,text=Cornsilk,%
+minimum width=\paperwidth,minimum height=5em,anchor=north]%
+at (current page.north){$\maltese$};
+
+{\bfseries\itshape\color{LightGoldenrod!50!Gold}\fontsize{36pt}{46pt}\selectfont
+Mathematical Proofs\par}
+
+\vspace*{2\baselineskip}
+
+{\LARGE\color{LightGoldenrod}
+\scshape{Miliyon T.}\par
+}
+
+\tikz[remember picture,overlay]%
+\node[fill=Sienna,font=\LARGE\bfseries,text=Cornsilk,%
+minimum width=\paperwidth,minimum height=3em,anchor=south]%
+ at (current page.south) {$\maltese$};
+\newpage
+
+\vspace*{\fill}
+\begin{quote}
+ \textmd{\textbf{Proofs are to mathematics what spelling (or even calligraphy) is to poetry. Mathematical works do consist of proofs, just as poems do consist of characters.}}
+\end{quote}
+ \begin{flushright}
+ \textbf{ -Vladimir Arnold}
+  \end{flushright}
+
+\vspace*{\fill}
+\begin{center}
+\LARGE\bfseries\color{SaddleBrown!30!black}
+
+\end{center}
+
+\cleartorecto
+
+%% Invoke fancy unnumbered chapter style
+%% for the table of contents
+\chapterstyle{FancyUnnumberedChap}
+\tableofcontents*
+
+\chapter{Preface}
+\begin{flushright}
+"Proof is the glue that holds mathematics together."\\
+- Sir Michael Atiyah
+\end{flushright}
+
+\noindent Proofs in mathematics are indispensable. Mathematics without proof is just a life without oxygen. Proving something is just convincing something is true to someone or to ourselves. Despite all the other types of proof, mathematical proofs are irrefutable. Once something is proved to be true mathematically in a \textit{clear manner}, it's hard (impossible) to disprove it.
+
+\medskip
+
+\noindent There are different ways of proving in mathematics; proof by contradiction, proof by \textit{induction}, \textit{direct proof}, \textit{indirect proof}, proof by \textit{contra positive}, proof by \textit{exhaustion} and so on. From all those methods(ways) of proving, a proof by contradiction is as the British mathematician G.H Hardy quote "mathematicians' finest weapon", the same method that people thought for centuries and yet that it was used by Euclid, to show that Primes goes forever(which isn't true\footnote{Prime Simplicity by Michael Hardy and Catherine Woodgold}).
+
+\medskip
+
+\noindent There are dozens of beautiful proofs in mathematics and most of them are the contribution of the great Leonhard Euler.
+
+\begin{align*}
+\zeta (2)=\frac{\pi^2}{6},\\
+e^{i\pi}+1=0,\\
+\zeta (s)=\prod_{p \in \Bbb P} \biggl(\frac{1}{1-\frac{1}{p^s}}\biggl)
+\end{align*}
+are some of Euler's beautiful result.
+
+\medskip
+
+\noindent The Hungarian mathematician Paul Erdos spent his whole life in finding an \textit{elementary proof}\footnote{An Elementary proof is a proof without the concept of complex analysis.} what he call a "\textit{proof from the book}". The proofs presented in this book are simple as they are given at high school and scarcely at undergraduate level.
+
+\begin{flushright}
+Miliyon T.\\
+Adama, Ethiopia
+\end{flushright}
+
+\chapter{Acknowledgment}
+%% Main matter starts here; resets page-numberings to arabic numeral 1
+First of all I would like to thank the almighty God to whom I owe my breath.
+
+
+\vspace*{\fill}
+
+\newpage
+
+\vspace*{\fill}
+\begin{center}
+To \begin*{}
+   Zer\\
+   Abe\\
+   Fiker
+\end*{}
+\end{center}
+
+\vspace*{\fill}
+
+
+\chapter{Notations}
+\listofnomenclature{lll}  % Include a list of Symbols (a three column table)
+{
+% symbol & name \\
+$\in$ & Membership in a set \\
+$A\times B$ & Cartesian product \\
+$\ni$ & Such that \\
+$\cap$ & Intersection \\
+$\cup$ & Union \\
+$\Rightarrow$ & Implies \\
+$\Leftrightarrow$ & If an only if \\
+$\subset$ & Subset \\
+$\emptyset$ & Null set \\
+$\exists$ & There exists \\
+$\forall$ & For all \\
+$\square$ & End of a proof \\
+$aH$ & Left coset \\
+$Ha$ & Right coset \\
+$(G,*)$ & Group \\
+$e$ & Identity element \\
+$a^{-1}$ & The inverse of a \\
+$G/H$ & Quotient group \\
+$\lhd$ & Normal subgroup \\
+$|G|$ & Number of elements in G\\
+$\mathbb{Z}$ & The of Integers \\
+$\mathbb{Q}$ & The set of Rational numbers \\
+$\mathbb{Q}^\times$ & $\mathbb{Q}-\{0\}$ \\
+$\mathbb{R}$ & The set of real numbers \\
+$\mathbb{C}$ & The set of complex numbers \\
+}
+
+\newpage
+\vspace*{\fill}
+
+\begin{quote}
+ \textmd{\textbf{"For example is not a proof."}}
+\end{quote}
+\begin{flushright}
+\textbf{ -Jewish Proverb}
+ \end{flushright}
+
+\vspace*{\fill}
+\mainmatter
+%% Invoke the FancyChap chapter style
+\chapterstyle{FancyChap}
+%% Public domain image from
+%% http://www.public-domain-image.com/objects/computer-chips/slides/six-computers-chips-circuits.html
+\part{Main}
+
+\renewcommand\chapterillustration{Euler}
+
+\chapter{Number Theory}
+
+\section{Euclid's Theorem}
+\begin{Theorem}{(Euclid)}{}
+%\footnote{Euclid's original proof is not by contradiction see Prime Simplicity by Michael Hardy and Catherine Woodgold.}
+There are an infinite number of primes.
+\end{Theorem}
+
+\begin{proof}
+Write the primes $2, 3, 5, 7, 11,\ldots $ in ascending order. For any particular prime $p$, consider the number
+$ N= (2\cdot3\cdot5\cdot7\cdot11\cdots p) +1.$
+That is, form the product of all the primes from $2$ to $p$, and increase this product by one. Because $N >1,$ we can use the fundamental theorem to conclude that $N$ is divisible by some prime $q$. But none of the primes $2, 3, 5,\cdots , p$ divides $N$. For if $q$ were one of these primes, then on combining the relation $ q\mid2\cdot3\cdot5\cdots p$ with $q\mid N,$ we would get $ q\mid(N-2\cdot3\cdot5\cdots p),$ or what is the same thing, $ q\mid1.$ The only positive divisor of the integer $1$ is $1$ itself, and since $q >1,$ the contradiction is obvious. Consequently, there exists a new prime $q$ larger than $p$.
+\end{proof}
+
+\begin{Lemma}{(Euclid's Lemma)}{}
+ Any composite number is divisible by a prime.
+\end{Lemma}
+
+\begin{proof}
+For a composite number $n$, there exists an integer $d$ satisfying the conditions $d\mid{n}$
+ and $1<d<n.$ among all such integers $d$, choose $p$ to be the smallest. Then $p$ must be a prime number. Otherwise, it too would possess a divisor $q$ with $1<q<p;$ but $q\mid{p}$ and $p\mid{n}$ implies that $q\mid{n}$, which contradicts our choice of $p$ as the smallest divisor, not equal to $1$, of $n$. Thus, there exists a prime $p$ with $p\mid{n}.$
+\end{proof}
+
+\newpage
+
+\begin{Theorem}{}{}
+If $p$ is a prime and $p\mid{ab},$ then either $p\mid{a}$ or $p\mid{b}$.
+\end{Theorem}
+
+\begin{proof}
+If $p\mid{a},$ then we need go no further, so let us assume that $p\nmid{a}.$ Since the only positive divisors of $p$ (hence, the only candidates for the value of $\gcd (a,p)$.) are $1$ and $p$ itself, this implies that $\gcd (a,p)=1.$ Citing Euclid's lemma, it follows immediately that $p\mid{b}$.
+\end{proof}
+
+\begin{Corollary}{}{}\label{uco}
+For any prime $p$ if $p|a^n$, then $p|a$.
+\end{Corollary}
+
+\section{Fundamental Theorem of Arithmetic}
+
+\begin{Theorem}{(Fundamental Theorem of Arithmetic)}{}
+Every positive integer $n>1$ is either a prime or can be expressed as a product of primes; this representation is unique, apart from the order in which the factors occur.
+\end{Theorem}
+
+\begin{proof}	
+Either $n$ is a prime or it is composite. In the first case there is nothing to prove. If $n$ is composite, then there exists a prime divisor of $n$, as we have shown. Thus, $n$ may be written as $n=p_1n_1,$ where $p_1$ is prime and $1<n_1<n.$ If $n_1$ is prime, then we have our representation. In the contrary case, the argument is repeated to produce a second prime number $p_2$ such that $n_1=p_2n_2$; that is,
+\[
+n=p_1p_2n_2; 1<n_2<n_1:
+\]
+
+\noindent If $n_2$ is a prime, then it is not necessary to go further. Otherwise, write $n_2=p_3n_3,$ with $p_3$ a prime; hence,
+\[
+N=p_1\cdot p_2\cdot p_3\cdot n_3; 1<n_3<n_2:
+\]
+
+\noindent The decreasing sequence $n>n_1>n_2>\cdots >1$ cannot continue indefinitely, so that after a finite number of steps $n_k$ is a prime,say $p_k$. This leads to the prime factorization
+$$n=p_1 p_2\cdots p_k:$$
+The second part of the proof the uniqueness of the prime factorization is more difficult. To this purpose let us suppose that the integer $n$ can be represented as a product of primes in two ways; say,
+$$n=p_1 p_2\cdots p_r=q_1q_2\cdots q_s; r\leq s;$$
+Where the $p_i$ and $q_j$ are all primes, written in increasing order, so that
+$ p_1\leq p_2 \leq\cdots\leq p_r$ and $q_1\leq q_2 \leq\cdots\leq q_s:$
+Because $p_1\mid q_1q_2\cdots q_s,$ we know that $p_1|q_k$ for some value of $k$. Being a prime, $q_k$ has only two divisors, $1$ and itself. Because $p_1$ is greater than $1$, we must conclude that $p_1=q_k;$ but then it must be that $p_1\geq q_1.$ An entirely similar argument (starting with $q_1$ rather than $p_1$) yields $q_1\geq p_1,$ so that in fact $p_1=q_1.$ We can cancel this common factor and obtain
+\[
+p_2 p_3\cdots p_r=q_2q_3\cdots q_s:
+\]
+Now repeat the process to get $p_2=q_2;$ cancel again, to see that
+\[
+p_3 p_4\cdots p_r=q_3q_4\cdots q_s:
+\]
+Continue in this fashion. If the inequality $r <s$ held, we should eventually arrive at the equation
+\[1=q_{r+1}q_{r+2}\cdots q_s;\]
+Which is absurd, since each $q_i >1.$ It follows that $r=s$ and that
+\[
+p_1=q_1;p_2=q_2,\cdots , p_r=q_r;
+\]
+This makes the two factorizations of $n$ identical.
+\end{proof}
+
+\section{The Division Algorithm}
+
+\begin{Definition}{\textbf{(Well Ordered)}}{}
+A nonempty set $S$ of real numbers is said to be well-ordered if every nonempty subset of $S$ has a least element.
+\end{Definition}
+
+\begin{Remark}{}{}
+Every nonempty finite set of real numbers is well-ordered.
+\end{Remark}
+
+\begin{Definition}{\textbf{(The Well-Ordering Principle)}}{}
+The set $\Bbb N$ of positive integers is well-ordered.
+\end{Definition}
+
+\begin{Theorem}{}{}\label{well-1}
+For each integer $m$, the set
+\[S=\{i\in\Bbb Z: i\geq m\}\]
+is well-ordered.
+\end{Theorem}
+
+\begin{proof}
+We need only show that every nonempty subset of $S$ has a least element. So let $T$ be a nonempty subset of $S$. If $T$ is a subset of $\Bbb N$, then, by \textbf{the Well-Ordering Principle}, $T$ has a least element. Hence we may assume that $T$ is not a subset of $\Bbb N$. Thus $T-\Bbb N$ is a finite nonempty set and so contains a least element $t$. Since $t\leq 0$, it follows that $t\leq x$ for all $x\in T$; so $t$ is a least element of $T$.
+\end{proof}
+
+\begin{Theorem}{(The Division Algorithm)}{}
+Let $a$ be any integer and $b$ a positive integer. Then there exist unique integers $q$ and $r$ such that                                                                      \[a=qb+r\qquad  \mbox{where } 0\leq r<b\]
+\end{Theorem}
+
+\begin{proof}
+The proof consists of two parts. First, we must establish the existence of the integers $q$ and $r$, and then we must show they are indeed unique.
+\begin{enumerate}
+\item Existence
+
+\noindent Consider the set $S=\{a-bn|\ n\in \Bbb Z \mbox{ and } a-bn\geq 0\}$. Clearly, $S\subset \Bbb W$. We shall show that $S$ contains a least element. To this end, first we will show that $S$ is a non empty subset of $\Bbb W$:
+\begin{description}
+    \item[Case 1:] Suppose $a\ge 0$. Then $a=a-b\cdot 0\in S$, so $S$ contains an element.
+    \item[Case 2:] Suppose $a<0$. Since $b\in \Bbb Z^+, b\geq 1$. Then $-ba\geq -a$; that is, $a-ba\geq 0$.
+\end{description}
+  Consequently, $a-ba\in S$. In both cases, $S$ contains at least one element, so $S$ is a nonempty subset of $\Bbb W$. Therefore, by theorem (\ref{well-1}), $S$ contains a least element $r$. Since $r\in S$, an integer $q$ exists such that $r=a-bq$, where $r\ge 0$.
+
+\noindent To show that  $r<b$: We will prove this by contradiction. Assume $r\geq b$. Then $r-b\geq 0$. But $r-b=(a-bq)-b=a-b(q+1)$. Since $a-b(q+1)$ is of the form $a-bn$ and is greater than $0$, $a-b(q+1)\in S$; that is, $r-b\in S$. Since $b>0$, $r-b<r$. Thus, $r-b$ is smaller than $r$ and is in $S$. This contradicts our choice of $r$, so $r<b$. Thus, there are integers $q$ and $r$ such that $a=bq+r$, where $0\leq r<b$.
+
+\item Uniqueness
+
+\noindent We would like to show that the integers $q$ and $r$ are unique. Assume there are integers $q,q',r$, and $r'$ such that $a=bq+r$ and $a=bq'+r'$, where $0\leq r<b$ and $0\leq r'<b$.
+
+\noindent Assume, for convenience, that $q\geq q'$. Then $r-r'=b(q-q')$. Because $q\geq q'$, $q-q'\geq 0$ and hence $r-r'\geq 0$. But, because $r<b$ and $r'<b$, $r-r'<b$. Suppose $q>q'$; that is, $q-q'\geq 1$. Then $b(q-q')\geq b$; that is, $r-r'\geq b$. This is a contradiction because $r-r'<b$. Therefore, $q\ngtr q'$; thus, $q=q'$, and hence, $r=r'$. Thus, the integers q and r are unique, completing the uniqueness proof.
+\end{enumerate}
+\end{proof}
+
+\section{Curious Sum}
+
+\begin{Theorem}{(Gauss Sum)}{}\label{the01}
+For any positive integer $n$ we have
+\begin{equation}
+1+2+3+\cdots +n=\frac{n(n+1)}{2}
+\end{equation}
+\end{Theorem}
+
+\noindent This result has been known by mathematicians\footnote{In $499$ AD Arybhata gave a formula for the sum of the first $n$ integers. Brahamagupta extended Arybhta's result to squares and cubes of the first $n$ integers.} far more from Gauss. But there is a beautiful mystical story about this problem and how the child prodigy \href{www.wikipedia.org/Gauss}{\textbf{Carl Friedreich Gauss}} approached the problem.
+The story goes like this$\ldots$ when Gauss was only ten his math teacher was bored of teaching and he asked his students to add the numbers from $1$ up to $100$. Eventually, Gauss came up with the correct answer less than in a minute.\\
+
+
+\noindent This is how Gauss did it.\\
+
+\begin{tabular}{ccccccccccccccccccccccccccccccc}
+  & 1 &+ 2 &+ 3 &+ $\cdots$ &+ 98 &+ 99 &+ 100 \\
++ & 100 &+ 99 &+ 98 &+ $\cdots$ &+ 3 &+ 2 &+ 1 \\
+\hline
+= & 101 &+ 101 &+ 101 &+ $\cdots$ &+ 101 &+ 101 &+ 101 \\
+\end{tabular}\\
+
+\noindent Clearly, as we can see from the above there are hundred 101 summands. Thus
+$$ 2(1+2+3+\cdots+100)=100(101)$$
+$$(1+2+3+\cdots+100)=\frac{100(101)}{2}$$
+The proof of Theorem \ref{the01} is now trivial. Just put n in place of 100.
+
+\medskip
+
+\noindent Gauss sum can be extended to non consecutive equally spaced numbers. i.e. Sequences of numbers with common difference.
+Suppose $$A_1 + (A_1 + d) + (A_1 +2d)+\cdots +(A_1 +(n-1)d)$$ be the sum of sequence of numbers with common difference $d$.
+
+\medskip
+
+\noindent Now, let's apply Gauss sum\\
+
+\begin{tabular}{ccccccccccccccccccccccccccccccc}
+  & $A_1$  &+ $(A_1 + d)$  &+ $\cdots$ &+ $(A_1 +(n-2)d)$ &+ $(A_1 +(n-1)d)$ \\
++ & $(A_1 +(n-1)d)$ &+ $(A_1 +(n-2)d)$ &+ $\cdots$ &+  $(A_1 + d)$ &+ $A_1$ \\
+\hline
+= & $(2A_1 +(n-1)d)$ &+ $(2A_1 +(n-1)d)$ &+ $\cdots$ &+ $(2A_1 +(n-1)d)$ &+ $(2A_1 +(n-1)d)$   \\
+\end{tabular}
+
+\medskip
+
+\noindent There are $n$ number of $(2A_1 +(n-1)d)$.
+\begin{align}
+2(A_1 + (A_1 + d) + (A_1 +2d)+\cdots +(A_1 +(n-1)d))=n(2A_1 +(n-1)d)\\
+A_1 + (A_1 + d) + (A_1 +2d)+\cdots +(A_1 +(n-1)d)=\frac{n}{2}(2A_1 +(n-1)d)\label{n3}
+\end{align}
+Let's do a substitution $A_n=A_1 +(n-1)d$ just to simplify things. Now (\ref{n3}) becomes
+\begin{equation}
+A_1 + A_2 + A_3+\cdots +A_n=\frac{n}{2}(2A_1 +(n-1)d),\qquad \text{where} \qquad d=A_i -A_{i-1}
+\end{equation}
+
+\begin{Notation}{}{}
+\begin{equation}\label{n4}
+S_n:=A_1+A_2+A_3+\cdots +A_n=\frac{n}{2}(2A_1 +(n-1)d)
+\end{equation}
+where $A_i$ is $i^{th}$ term in the sequence $A_1,A_2,A_3,\cdots ,A_n$.
+\begin{equation}
+D_n:=A_1-A_2-A_3- \cdots -A_n
+\end{equation}
+where $A_i$ is $i^{th}$ term in the sequence $A_1,A_2,A_3,\cdots ,A_n$.
+\end{Notation}
+
+\begin{Corollary}{(Gauss Difference)}{}
+
+\[D_n=(2-n) A_1-\frac{nd}{2}(n-1)\]
+\end{Corollary}
+
+\begin{proof}\footnote{N{\ae}l H/Mariam.}Consider
+\begin{align*}
+D_n &=A_1-A_2-A_3- \cdots -A_n\\
+    &= A_1-(A_2+A_3+ \cdots +A_n)\\
+    &= A_1-(A_1+A_2+A_3+ \cdots +A_n-A_1)\\
+    &= A_1-(S_n-A_1)\\
+    &= 2A_1-S_n
+\end{align*}
+But from (\ref{n4}) we have $S_n=\frac{n}{2}(2A_1 +(n-1)d)$
+\begin{equation}
+D_n =2A_1-\frac{n}{2}(2A_1 +(n-1)d)
+\end{equation}
+$$\therefore D_n=(2-n) A_1-\frac{nd}{2}(n-1)$$
+\end{proof}
+
+
+\begin{Theorem}{(Arithmetic Sum)}{}
+\begin{align}
+S_n=\frac{n}{2}(A_1+A_n)
+\end{align}
+\end{Theorem}
+
+\begin{proof}
+We know
+\begin{align*}
+A_n=A_1+(n-1)d
+\end{align*}
+where $A_1$ is the first term of the arithmetic sequence, $A_n$ is the $n^{th}$ term and $d$ is the common difference.
+\begin{align*}
+S_n=A_1+A_2+A_3+\cdots+A_n
+\end{align*}
+
+\begin{tabular}{cccccccccccccccccccccccccccccc}
+  $S_n=$ & $A_1$  &+ $(A_1 + d)$  &+ $\cdots$ &+ $(A_1 +(n-2)d)$ &+ $(A_1 +(n-1)d)$ \\
++ $S_n=$ & $(A_1 +(n-1)d)$ &+ $(A_1 +(n-2)d)$ &+ $\cdots$ &+  $(A_1 + d)$ &+ $A_1$ \\
+\hline
+$2S_n$= & $(2A_1 +(n-1)d)$ &+ $(2A_1 +(n-1)d)$ &+ $\cdots$ &+ $(2A_1 +(n-1)d)$ &+ $(2A_1 +(n-1)d)$   \\
+\end{tabular}
+\begin{align*}
+2S_n&=n(2A_1+(n-1)d)\\
+S_n&=\frac{n}{2}(2A_1+(n-1)d)\\
+   &=\frac{n}{2}(A_1+A_1+(n-1)d)\\
+   &=\frac{n}{2}(A_1+A_n)
+\end{align*}
+\end{proof}
+
+\begin{Theorem}{(Geometric Sum)}{}
+\begin{align*}
+G_1+rG_1+r^2G_1+\cdots+r^{n-1}G_1=G_1\biggl(\frac{1-r^n}{1-r}\biggl)
+\end{align*}
+\end{Theorem}
+\begin{proof}
+
+\end{proof}
+
+\newpage
+
+\begin{Theorem}{(Basel Problem)}{}
+The sum of the reciprocal of the integers converges,
+$$
+\zeta(2)=1+ \frac{1}{4}+\frac{1}{9}+\cdots =\frac{\pi^2}{6}
+$$
+\end{Theorem}
+
+\begin{proof}
+Consider the Cardinal Sine function
+\[
+\frac{\sin x}{x}, \quad \text{which has non zero roots at }\pm\pi,\pm2\pi,\pm3\pi,\pm4\pi,\ldots
+\]
+
+So we can write this function as infinite product of polynomials like this
+\begin{align*} \frac{\sin{x}}{x}=\biggl(1-\frac{x}{\pi}\biggl)\biggl(1+\frac{x}{\pi}\biggl)\biggl(1-\frac{x}{2\pi}\biggl)\biggl(1+\frac{x}{2\pi}\biggl)
+\biggl(1-\frac{x}{3\pi}\biggl)\biggl(1+\frac{x}{3\pi}\biggl)\biggl(1-\frac{x}{4\pi}\biggl)\biggl(1+\frac{x}{4\pi}\biggl)\cdots
+\end{align*}
+
+$$
+= \biggl(1-\frac{x^2}{\pi^2}\biggl)\biggl(1-\frac{x^2}{4\pi^2}\biggl)\biggl(1-\frac{x^2}{9\pi^2}\biggl)\cdots
+$$
+Expand this infinite product to get
+$$
+\frac{\sin x}{x}= 1+\biggl(-\frac{x^2}{\pi^2} -\frac{x^2}{4\pi^2}-\frac{x^2}{9\pi^2}\cdots\biggl)+ \cdots
+$$
+Since we are only interested on the coefficient of $x^2$
+$$
+\frac{\sin x}{x}= 1-\frac{x^2}{\pi^2}\biggl(1+\frac{1}{4}+\frac{1}{9}+\cdots\biggl)+\cdots
+$$
+
+\begin{equation}\label{b1}
+= 1-\frac{\zeta(2)}{\pi^2}x^2+\cdots
+\end{equation}
+But from Taylor expansion we know that
+$$
+\sin x=x-\frac{x^3}{3!}+\frac{x^5}{5!}-\frac{x^7}{7}!+\cdots
+$$
+Divide both side by $x$ then it becomes
+\begin{equation}\label{b2}
+\frac{\sin x}{x}=1-\frac{x^2}{3!}+\frac{x^4}{5!}-\frac{x^6}{7!}+\cdots
+\end{equation}
+Now equate the coefficients of $x^2$ in (\ref{b1}) and (\ref{b2}).
+$$
+-\frac{\zeta(2)}{\pi^2}=-\frac{1}{3!}
+$$
+$$
+\zeta(2)=\frac{\pi^2}{3!}.
+$$
+\end{proof}
+\noindent Euler solved this problem in 1735. Which is now known to be $\zeta(2)$. He also calculated the value of zeta function($\zeta(s)$) up to $s=26$. which  is
+$$
+\zeta(26)=\sum_{n=1}^\infty \frac{1}{n^{26}}=\frac{1315862}{11094481976030578125}\pi^{26}
+$$
+Furthermore, Euler generalized this for any even integer $2n$,
+\[
+\zeta(2n)=\frac{(-1)^{n-1}B_{2n}(2\pi)^{2n}}{2(2n)!}
+\]
+where $n\in \mathbb{N}$ and $B_{2n}$ is Bernoulli number.
+
+\newpage
+\begin{Theorem}{(Euler)}{}
+The sum of natural number converges.
+\[
+1+2+3+4+\cdots=-\frac{1}{12}
+\]
+\end{Theorem}
+
+\begin{proof}
+From Geometric series we have
+\begin{align}\label{c1}
+\frac{1}{(1-x)}=1+x+x^2+x^3+\cdots
+\end{align}
+Evaluating at $x=-1$
+\[
+\frac{1}{2}=1-+1-1+\cdots
+\]
+Take (\ref{c1}) again and differentiate both side
+\[
+\frac{1}{(1-x)^2}=1+2x+3x^2+4x^3+\cdots
+\]
+Substitute $x=-1$
+\begin{align}\label{c3}
+\frac{1}{4}=1-2+3-4+\cdots
+\end{align}
+Then, introduce
+\begin{align}\label{c4}
+\zeta(s)=1+\frac{1}{2^s}+\frac{1}{3^s}+\frac{1}{4^s}+\cdots
+\end{align}
+Multiplying by $\frac{2}{2^s}$
+\begin{align}\label{c5}
+\frac{2}{2^s} \zeta(s)=\frac{2}{2^s}+\frac{2}{4^s}+\frac{2}{6^s}\cdots
+\end{align}
+Now subtract (\ref{c5}) from (\ref{c4})
+\begin{align*}
+\zeta(s)-\frac{2}{2^s}\zeta(s)&=\biggl(1+\frac{1}{2^s}+\frac{1}{3^s}+\frac{1}{4^s}\cdots\biggl)-
+\biggl(\frac{2}{2^s}+\frac{2}{4^s}+\frac{2}{6^s}\cdots\biggl)\\
+(1-\frac{2}{2^s})\zeta(s)&=\biggl(1+\frac{1}{2^s}+\frac{1}{3^s}+\frac{1}{4^s}\cdots\biggl)-
+\biggl(\frac{2}{2^s}+\frac{2}{4^s}+\frac{2}{6^s}\cdots\biggl)
+\end{align*}
+
+\[
+(1-\frac{2}{2^s})\zeta(s)=(1-\frac{1}{2^s}+\frac{1}{3^s}-\frac{1}{4^s}+\cdots)
+\]
+Evaluate the last equation at $s=-1$
+\begin{align*}
+(1-\frac{2}{2^{-1}})\zeta(-1)=(1-\frac{1}{2^{-1}}+\frac{1}{3^{-1}}-\frac{1}{4^{-1}}+\cdots)
+\end{align*}
+Which gives us
+\begin{align*}
+(1-4)\zeta(-1)=(1-2+3-4+\cdots)
+\end{align*}
+\begin{align*}
+(-3)\zeta(-1)=(1-2+3-4+\cdots)
+\end{align*}
+But from (\ref{c3}) we know that $1-2+3-4+\cdots=\frac{1}{4}$.\\And from (\ref{c4}) we could easily derive $\zeta(-1)=(1+2+3+4+\cdots)$. Thus
+\begin{align*}
+(-3)\zeta(-1)=\frac{1}{4}
+\end{align*}
+Finally we get
+\[
+(1+2+3+4+\cdots)=-\frac{1}{12}
+\]
+\end{proof}
+
+\section{Partitions}
+
+\begin{flushright}
+\fbox{%
+\parbox{0.7\linewidth}{%
+$\textbf{D(n)}$ is the number of ways of writing $n$ as the sum of distinct whole numbers.\\
+$\textbf{O(n)}$ is the number of ways of writing $n$ as the sum of (not necessarily distinct)odd numbers.}}
+\end{flushright}
+
+\begin{Example}{}{}
+Find $D(7)$ and $O(7)$\\
+The partition of $7$ into odd parts
+\begin{align*}
+7,\quad 5+1+1,\quad 3+3+1,\quad 3+1+1+1+1,\quad 1+1+1+1+1+1+1
+\end{align*}
+The partition of $7$ into distinct parts
+\begin{align*}
+7,\quad 6+1,\quad 5+2,\quad 4+3,\quad 4+2+1
+\end{align*}
+Thus $D(7)=O(7)=5$.
+\end{Example}
+
+\medskip
+
+\begin{Theorem}{(Distinct sum is equal to Odd sum)}{}
+\begin{align}\label{distodd}
+O(n)=D(n)
+\end{align}
+\end{Theorem}
+
+\begin{proof}[(Non-standard proof)]
+ Introduce
+\begin{align*}
+P(x)&=(1+x)(1+x^2 )(1+x^3)(1+x^4)(1+x^5)\cdots\\
+    &=1+x+x^2+(x^3+x^{2+1} )+(x^4+x^{3+1} )+(x^5+x^{4+1}  +x^{3+2} )+ \cdots
+\end{align*}
+So
+\begin{equation}
+P(x)=1+\sum_{n=1}^\infty D(n) x^n
+\end{equation}
+Introduce
+\begin{align*}
+Q(x)&=\frac{1}{(1-x)}\cdot \frac{1}{(1-x^3)}\cdot \frac{1}{(1-x^5)}\cdots\\
+&=(1+x+x^2+x^3+\cdots)(1+x^3+x^6+x^9+\cdots)(1+x^5+x^{10}+x^{15}+\cdots)\cdots\\
+&= (1+x^1+x^{1+1}+x^{1+1+1}+\cdots)\cdot(1+x^3+x^{3+3}+x^{3+3+3}+\cdots)\cdot\\
+&\qquad(1+x^5+x^{5+5+5}+x^{5+5+5}+\cdots)\cdots
+\end{align*}
+So
+\begin{equation}
+Q(x)=1+\sum_{n=1}^\infty O(n)x^n
+\end{equation}
+
+\noindent What we have done so far is we introduce two function $P(x)$ and $Q(x)$. Additionally we  have proved that they are actually equal to the following infinite sums.
+
+$$P(x)=(1+x)(1+x^2)(1+x^3)\cdots=1+\sum_{n=1}^\infty D(n) x^n$$
+
+$$Q(x)=\frac{1}{(1-x)}\cdot\frac{1}{(1-x^3)}\cdot \frac{1}{(1-x^5)}\cdots=1+\sum_{n=1}^\infty O(n)x^n
+$$
+Our aim is to show $D(n) =O(n)$. WLOG, suppose our generating functions $P(x)$ and $Q(x)$ are equal.
+$$P(x) =Q(x)$$
+$$1+\sum_{n=1}^\infty D(n) x^n =1+\sum_{n=1}^\infty O(n)x^n$$
+$$\Rightarrow D(n) =O(n)$$
+Now, we are only expected to show our assumption $P(x)=Q(x)$ is true.
+
+\medskip
+
+\noindent Let's pick $P(x)$ and do some trick
+\begin{align*}
+P(x)&=(1+x)(1)(1+x^2)(1)(1+x^3)\cdots \\
+    &=(1+x)\biggl(\frac{1-x}{1-x}\biggl)(1+x^2)\biggl(\frac{1-x^2}{1-x^2}\biggl)(1+x^3)\cdots\\ &=\frac{\hcancel[red]{(1+x)(1-x)}\hcancel[blue]{(1+x^2)(1-x^2)}(1+x^3)(1-x^3)
+    (1+x^4)(1-x^4)}{\qquad(1-x)\qquad\cdot\qquad\hcancel[red]{(1-x^2)}\qquad\cdot\qquad(1-x^3)\qquad\cdot\qquad\hcancel[blue]{(1-x^4)}}\cdots
+\end{align*}
+If we keep multiplying by this pattern the entire numerator will cancel out and becomes $1$. All the expressions with even power will cancel out and the odds left in the de-numerator.
+Like this
+\begin{align*}
+=\frac{1}{(1-x)}\cdot\frac{1}{(1-x^3)}\cdot \frac{1}{(1-x^5)}\cdots
+\end{align*}
+which is  equal to $Q(x)$.\\
+Hence we can conclude that
+$$D (n) = O (n).$$
+\end{proof}
+\begin{proof}[(Standard proof)]
+The generating function for $D(n)$ beautifully factored into\footnote{George Andrew's Integer partition.}
+\begin{align}
+\sum_{n=0}^{\infty}D(n)q^n=\prod_{n=1}^{\infty}(1+q^n)
+\end{align}
+The generating function for $O(n)$ beautifully factored into
+\begin{align}
+\sum_{n=0}^{\infty}O(n)q^n=\prod_{n\text{ odd}}\frac{1}{(1-q^n)}
+\end{align}
+Now,
+\begin{align*}
+\prod_{n=1}^{\infty}(1+q^n)&=(1+q)(1+q^2)(1+q^3)(1+q^4)(1+q^5)(1+q^6)(1+q^7)\cdots\\
+                           &=\biggl(\frac{1-q^2}{1-q}\biggl)\biggl(\frac{1-q^4}{1-q^2}\biggl)\biggl(\frac{1-q^6}{1-q^3}\biggl)
+                           \biggl(\frac{1-q^8}{1-q^4}\biggl)\biggl(\frac{1-q^{10}}{1-q^5}\biggl)\biggl(\frac{1-q^{12}}{1-q^6}\biggl)\cdots\\
+                           &=\frac{1}{(1-q)(1-q^3)(1-q^5)}\cdots \tag{by cancelling common factors}\\
+                           &=\prod_{n\text{ odd}}\frac{1}{(1-q^n)}
+\end{align*}
+Thus the generating functions are identical; hence for every $n\geq0$, equation (\ref{distodd}) is true.
+\end{proof}
+
+\section{Irrational Numbers}
+
+\begin{Theorem}{}{}
+The $n^{th}$ root of a prime is irrational.
+\end{Theorem}
+
+\begin{proof}
+Suppose not. i.e suppose it is rational, thus we can write $\sqrt[n]{p}=\frac{a}{b}$  where $n \in \mathbb{Z}\geq2$ and  $a,b \in \mathbb{Z}$ and they are relatively prime. Taking a power $n$ both side gives
+\begin{align}\label{primerut1}
+{p}=\frac{a^n}{b^n}
+\end{align}
+
+$$
+pb^n=a^n
+$$
+
+$$
+p\mid a^n  \Rightarrow a\neq 1
+$$
+
+\noindent From Fundamental theorem of Arithmetic
+\begin{equation}
+a= \prod_{i=1}^{k} p_i
+\end{equation}
+
+$$
+a=p_1\cdot p_2\cdot p_3\cdots p_k  ,k\geq 1
+$$
+$$
+\Rightarrow p|(p_1\cdot p_2\cdot p_3\cdots p_k )^n
+$$
+This implies $p$ divides $p_i$  for some $i$ between $1$ and $k$.\\
+Prime number divides prime number
+$$ \Rightarrow p=p_i$$
+Thus, $ p\mid a$ since $p_i \mid a$
+\[
+\because p\mid a^n \Rightarrow p|a
+\]
+Now we can write $a$ as $a=pk$, where $k \in \mathbb{Z}$. Let's substitute this on (\ref{primerut1}).
+\[
+p=\frac {(pk)^n}{b^n}
+\]
+
+$$
+pb^n=p^n \cdot k^n
+$$
+
+$$
+b^n = p^{n-1}\cdot k^n=p\cdot p^{n-2} k^n
+$$
+
+$$
+b^n=p\cdot p^{n-2} k^n
+$$
+
+\noindent Which implies $p\mid b^n$ then by similar argument as the above we can easily show that $p\mid b$.
+Now we have shown that $p\mid a$ and $p\mid b$ but this contradict the fact that $a$ and $b$ are relatively prime.\\
+Hence our assumption that $\sqrt[n]{p}$ is rational is wrong.\\  $\therefore \sqrt[n]{p}$ is irrational.
+\end{proof}
+
+\begin{Corollary}{}{}
+$\sqrt{2}$ is Irrational.
+\end{Corollary}
+
+\begin{proof}
+Suppose not. i.e. $\sqrt{2}$ is rational. So it can be written as $\frac{a}{b}$ in which $a$ and $b$ are relatively prime($\gcd(a,b)=1$).
+
+$$
+\sqrt{2}=\frac{a}{b}
+$$
+
+$$
+2=\frac{a^2}{b^2}
+$$
+\begin{equation}\label{2sq}
+a^2=2b^2
+\end{equation}
+This implies
+$$
+2|a^2
+$$
+But from (\ref{uco})
+$$
+2|a^2\Rightarrow 2|a
+$$
+Hence a is even there for we can write a as $a=2k$. Let's substitute this fact into (\ref{2sq})
+$$\Rightarrow (2k)^2=2b^2$$
+$$\Rightarrow 4k^2=2b^2$$
+$$\Rightarrow b^2=2k^2$$
+This implies
+$$
+2|b^2
+$$
+By the same reason as the above $2|b$.
+In other word b is even. Thus, a contradiction! a and b are not relatively prime.\\
+Hence our assumption $\sqrt{2}$ is rational is wrong. Therefore $\sqrt{2}$ is irrational.
+\end{proof}
+
+
+\renewcommand\chapterillustration{Euclid}
+
+\chapter{Geometry}
+
+\section{Pythagoras Formula}
+
+\begin{Theorem}{(Pythagoras)}{}
+Let $a,b$ and $c$ be the three sides of a right triangle, then
+\begin{align}
+a^2+b^2=c^2
+\end{align}
+\end{Theorem}
+
+\begin{proof}[Proof 1] Look at Figure \ref{pytha1}
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=.7\textwidth]{pythagoras.png}
+\caption{Proof of Pythagoras Formula $\#1$}\label{pytha1}
+\end{figure}
+\end{proof}
+
+\begin{proof}[Proof 2]\footnote{This proof is due to James A. Garfield, the twentieth president of the United States, he developed the proof in 1876.}
+Consider the trapezoid $ABCD$ shown below
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=.48\textwidth]{pythagoras2.png}
+\caption{Proof of Pythagoras Formula $\#2$}
+\end{figure}
+
+The area of the trapezoid $ABCD$ is the sum of the three triangles inside it.
+\[A_{ABCD}=A_{\triangle ADE}+A_{\triangle DCE}+A_{\triangle BCE}\]
+Thus
+\begin{align*}
+\frac{1}{2}(a+b)(a+b)&=\frac{1}{2}ab+\frac{1}{2}c^2+\frac{1}{2}ab\\
+(a+b)^2&=2ab+c^2\\
+a^2+2ab+b^2&=2ab+c^2\\
+a^2+b^2&=c^2
+\end{align*}
+\end{proof}
+\begin{proof}[Proof 3]
+Here is another proof without word (see Figure \ref{pytha3})
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=.7\textwidth]{pythagoras3.png}
+\caption{Proof of Pythagoras Formula $\#3$}\label{pytha3}
+\end{figure}
+\end{proof}
+
+\newpage
+
+\section{Trigonometric Addition Rule}
+
+\begin{Theorem}{\textbf{(Sine Addition)}}{}
+Let $\alpha$ and $\beta$ be two angles, then
+\[\sin(\alpha+\beta)=\sin\alpha\cos\beta+\sin\beta\cos\alpha.\]
+\end{Theorem}
+
+\begin{proof}
+Let $\alpha$ and $\beta$ be measures of positive angle such that $\alpha+\beta<90^{\circ}$ (consider figure \ref{sinadd}).
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=.55\textwidth]{sinadd.png}
+\caption{Sine Addition}\label{sinadd}
+\end{figure}
+
+Now $\measuredangle APB=\alpha$ since corresponding sides ($OA$ and $AP$, $OB$ and $BP$) are perpendicular. Then
+\begin{align*}
+\sin(\alpha+\beta)&=\frac{AP}{OP}=\frac{AD+DP}{OP}=\frac{CB+DP}{OP}=\frac{CB}{OP}+\frac{DP}{OP}
+                  =\frac{CB}{OB}\frac{OB}{OP}+\frac{DP}{BP}\frac{BP}{OP}\\
+                  &=\sin\alpha\cos\beta +\cos\alpha\sin\beta
+\end{align*}
+%Therefore,
+%\[\sin(\alpha\pm\beta)=\sin\alpha\cos\beta \pm \cos\alpha\sin\beta \]
+\end{proof}
+
+\begin{Theorem}{\textbf{(Cosine Addition)}}{}
+\[\cos(\alpha+\beta)=\cos\alpha\cos\beta -\sin\alpha\sin\beta\]
+\end{Theorem}
+
+\begin{proof}
+Consider figure \ref{cosadd}
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=.7\textwidth]{cosadd.png}
+\caption{Cosine Addition}\label{cosadd}
+\end{figure}
+From which we get
+\begin{align*}
+\cos(\alpha+\beta)&=\frac{OA}{OP}=\frac{OC-AC}{OP}=\frac{OC-DB}{OP}=\frac{OC}{OP}-\frac{DB}{OP}
+                  =\frac{OC}{OB}\frac{OB}{OP}-\frac{DB}{BP}\frac{BP}{OP}\\
+                  &=\cos\alpha\cos\beta -\sin\alpha\sin\beta
+\end{align*}
+
+\end{proof}
+\section{Trigonometric Identities}
+
+\begin{Theorem}{\textbf{(Pythagorean Identity)}}{}
+\begin{align}
+\cos^2\alpha+\sin^2\alpha=1
+\end{align}
+\end{Theorem}
+\begin{proof}
+Consider the right angle triangle inside the unit circle below\\
+\begin{tikzpicture}[scale=3,cap=round]
+  % Local definitions
+  \def\costhirty{0.8660256}
+
+  % Colors
+  \colorlet{anglecolor}{green!50!black}
+  \colorlet{sincolor}{red}
+  \colorlet{tancolor}{orange!80!black}
+  \colorlet{coscolor}{blue}
+
+ % Styles
+  \tikzstyle{axes}=[]
+  \tikzstyle{important line}=[very thick]
+  \tikzstyle{information text}=[rounded corners,fill=red!10,inner sep=1ex]
+
+ % The graphic
+ % \draw[style=help lines,step=0.5cm] (-1.4,-1.4) grid (1.4,1.4);
+
+  \draw (0,0) circle (1cm);
+
+  \begin{scope}[style=axes]
+    \draw[->] (-1.5,0) -- (1.5,0) node[right] {$x$};
+    \draw[->] (0,-1.5) -- (0,1.5) node[above] {$y$};
+
+    \foreach \x/\xtext in {-1, 1}
+      \draw[xshift=\x cm] (0pt,1pt) -- (0pt,-1pt) node[below,fill=white]
+            {$\xtext$};
+
+    \foreach \y/\ytext in {-1, 1}
+      \draw[yshift=\y cm] (1pt,0pt) -- (-1pt,0pt) node[left,fill=white]
+            {$\ytext$};
+  \end{scope}
+
+  \filldraw[fill=green!20,draw=anglecolor] (0,0) -- (3mm,0pt) arc(0:30:3mm);
+  \draw (15:2mm) node[anglecolor] {$\alpha$};
+
+  \draw[style=important line,sincolor]
+    (30:1cm) -- node[left=1pt,fill=white] {$\sin \alpha$} +(0,-.5);
+
+  \draw[style=important line,coscolor]
+    (0,0) -- node[below=2pt,fill=white] {$\cos \alpha$} (\costhirty,0);
+
+  \draw[style=important line,tancolor] (1,0) --
+    node [right=1pt,fill=white]
+    {
+      $\displaystyle \tan \alpha \color{black}=
+      \frac{{\color{sincolor}\sin \alpha}}{\color{coscolor}\cos \alpha}$
+    } (intersection of 0,0--30:1cm and 1,0--1,1) coordinate (t);
+
+  \draw (0,0) -- (t);
+
+  \draw[xshift=1.85cm] node [right,text width=6cm,style=information text]
+    {
+      Using Pythagoras formula with $a=\sin\alpha,b=\cos\alpha,c=1$. The identity follows
+      \begin{align}\label{pytid}
+      {\color{coscolor}\cos^2 \alpha} +{\color{sincolor}\sin^2\alpha} =1
+      \end{align}
+      Using the above identity with simple algebraic manipulation,
+      we can derive the following identity.\\
+      \begin{align}
+      1 +\cot^2\alpha=\csc^2\alpha
+      \end{align}
+      which is obtained by dividing (\ref{pytid}) by $\sin^2\alpha$.
+      \begin{align}
+      \tan^2\alpha+1=\sec^2\alpha
+      \end{align}
+      which is obtained by dividing (\ref{pytid}) by $\cos^2\alpha$.
+    };
+\end{tikzpicture}
+\end{proof}
+
+\section{Ptolomy's Theorem}
+
+\begin{Theorem}{\textbf{(Ptolomy)}}{}
+\begin{align}
+AD\cdot BC=AC\cdot BD
+\end{align}
+\end{Theorem}
+
+
+\renewcommand\chapterillustration{muha}
+
+\chapter{Algebra}
+
+\section{Quadratic formula}
+
+\begin{Theorem}{}{}
+The quadratic equation $ax^2 + bx+ c = 0$ $(a,b,c \in \mathbb{R}, a\neq0)$ has solutions
+$$ x_{1,2}=\frac{-b\pm\sqrt{b^2-4ac}}{2a}$$
+\end{Theorem}
+
+\begin{proof}
+We use the method of completing the square to rewrite $ax^2+bx+c$.
+\begin{align*}
+ax^2+bx+c&=a\left( x^2 + \frac{b}{a}x+\right)+c \\
+  &=a\left( x^2 + \frac{b}{a}x+ \left(\frac{b}{2a}\right)^2
+     -\left(\frac{b}{2a}\right)^2 +\right)+c \\
+  &=a\left( x+\frac{b}{2a}\right)^2 -  a\left(\frac{b}{2a}\right)^2+c\\
+  &= a\left( x+\frac{b}{2a}\right)^2- \frac{b^2-4ac}{4a}.
+\end{align*}
+Therefore $ax^2+bx+c=0$ can be rewritten as
+$$
+a\left( x+\frac{b}{2a}\right)^2- \frac{b^2-4ac}{4a}=0,
+$$
+which can in turn  be rearranged as
+$$
+\left( x+\frac{b}{2a}\right)^2= \frac{b^2-4ac}{4a^2}.
+$$
+Taking square roots gives
+$$
+x+\frac{b}{2a}= \frac{\pm \sqrt{b^2-4ac}}{2a}
+$$
+which implies
+$$
+x=\frac{-b\pm \sqrt{b^2-4ac}}{2a}
+$$
+as required.
+\end{proof}
+
+\newpage
+
+\section{Cubic formula}
+
+\begin{Theorem}{\textbf{(Euler's Derivation)}}{}
+A solution to the depressed equation $x^3 = mx + n$ is given by
+$$x = \sqrt[3]{\frac{n}{2} + \sqrt{\frac{n^2}{4} - \frac{m^3}{27}} } + \sqrt[3]{\frac{n}{2} - \sqrt{\frac{n^2}{4} - \frac{m^3}{27}} }. $$
+\end{Theorem}
+
+\begin{proof}
+Assume $x = \sqrt[3]{p} + \sqrt[3]{q}$,  cube both sides:
+\begin{align*}
+x^3 	&= p + 3\sqrt[3]{p^2q} + 3\sqrt[3]{pq^2} + q\\
+ 	&= 3\sqrt[3]{pq}(\sqrt[3]{p} + \sqrt[3]{q}) + (p + q)\\
+ 	&= 3\sqrt[3]{pq}x + (p + q).
+\end{align*}
+The resulting equation obviously has the same structure as the original depressed cubic equation. This suggests letting $3\sqrt[3]{pq} = m  $ and $p + q = n$; and subsequently finding $p$ and $q$ and then also $x = \sqrt[3]{p} + \sqrt[3]{q}$.\\
+So, $4pq = 4m^3/27$  and from $(p + q)^2 =p^2 + 2pq + q^2 = n^2$. Combining these yields
+$$(p^2 +2pq +q^2) - 4pq = n^2 - \frac{4m^3}{27}$$
+which simplifies to $(p - q)^2 = n^2 - \frac{4m^3}{27}.$ Thus $p - q = \sqrt{n^2 - \frac{4m^3}{27}}.$\\
+Adding and subtracting $p + q = n$,  gives
+$$2p 	= n + \sqrt{n^2 - \frac{m^3}{27}}$$
+$$2q 	= n - \sqrt{n^2 - \frac{m^3}{27}}$$
+So that the solution of the original cubic is
+$x = \sqrt[3]{\frac{n}{2} + \sqrt{\frac{n^2}{4} - \frac{m^3}{27}} } + \sqrt[3]{\frac{n}{2} - \sqrt{\frac{n^2}{4} - \frac{m^3}{27}} }.$
+\end{proof}
+
+\begin{Theorem}{\textbf{(Tartagilia Derivation)}}{}
+A solution for an equation in the form $x^3 + ax = b$, $a> 0$, $b > 0$ is given by
+$x = \sqrt[3]{\frac{b}{2} + \sqrt{\frac{b^2}{4} + \frac{a^3}{27}}} - \sqrt[3]{\frac{-b}{2} + \sqrt{\frac{b^2}{4} + \frac{a^3}{27}}}.$
+\end{Theorem}
+
+\begin{proof}
+Let $x = p - q,\ a = 3pq$  and $b = p^3 - q^3.$\\
+This leads to a quadratic equation in $q^3$;
+$$27(q^3)^2 + 27bq^3 - a^3=0$$
+solving which gives
+$$q^3 = \frac{-b}{2} \pm \sqrt{\frac{b^2}{4} + \frac{a^3}{27}}$$
+so that $q = \sqrt[3]{\frac{-b}{2} + \sqrt{\frac{b^2}{4} + \frac{a^3}{27}}}.$\\
+where the possibility of a negative $q$ has been discarded as an unacceptable oddity. Quite similarly we can find that
+$p = \sqrt[3]{\frac{b}{2} + \sqrt{\frac{b^2}{4} + \frac{a^3}{27}}}.$\\
+Thus
+$x = p - q = \sqrt[3]{\frac{b}{2} + \sqrt{\frac{b^2}{4} + \frac{a^3}{27}}} - \sqrt[3]{\frac{-b}{2} + \sqrt{\frac{b^2}{4} + \frac{a^3}{27}}}.$
+\end{proof}
+
+\section{Heron's Formula}
+
+\begin{Theorem}{}{}
+The area of a triangle with sides $a,b$ and $c$ is given by
+\begin{align}
+A=\sqrt{s(s-a)(s-b)(s-c)}, \qquad \text{ where }s=\frac{a+b+c}{2}
+\end{align}
+\end{Theorem}
+
+\newpage
+
+\section{Trigonometric Identities}
+
+\newpage
+
+\section{Binet's Formula}
+
+\subsection{Basic Introduction}
+
+\begin{Definition}{(Golden Ratio)}{}
+The golden ratio (golden section) is defined as follows
+$$\frac{a}{b}=\frac{a+b}{a}$$
+or we can define the golden ratio using continued fraction
+\begin{align}\label{Continued}
+\phi:=1+\frac{1}{1+\frac{1}{1+\frac{1}{1+\frac{1}{1+\frac{1}{1+\frac{1}{1+\frac{1}{\ddots}}}}}}}
+\end{align}
+The other way to define the golden ratio would be this
+\begin{align}\label{square}
+\phi:=\sqrt{1+\sqrt{1+\sqrt{1+\sqrt{1+\sqrt{1+\sqrt{1+\cdots}}}}}}
+\end{align}
+\end{Definition}
+
+\subsection{Interesting Identities}
+The identity that we get from (\ref{Continued}) directly
+\begin{align}\label{id1}
+\phi=1+\frac{1}{\phi}
+\end{align}
+The following identity is derived from (\ref{square})
+\begin{align}\label{id2}
+\phi^2=1+\phi
+\end{align}
+\subsection{Some Linear Algebra facts}
+\begin{align}\label{fact}
+  \left[\begin{matrix} F_1\\ F_2 \end{matrix} \right] = \left[\begin{matrix} 1\\ 1\end{matrix}\right]
+\qquad \& \qquad
+\left[\begin{matrix} F_n\\ F_{n+1} \end{matrix}\right] = \left[ \begin{matrix} 0   & 1 \\ 1  & 1 \end{matrix}\right] \left[\begin{matrix} F_{n-1}\\ F_n \end{matrix}\right]
+\end{align}
+We are going to see the importance of (\ref{fact}) in proving the following lemma.
+
+\begin{Lemma}{}{}
+For any $n\in\mathbb{N}$
+$$
+\left[\begin{matrix} F_n\\ F_{n+1} \end{matrix}\right] = \left[ \begin{matrix} 0   & 1 \\ 1  & 1 \end{matrix}\right]^{n-1} \left[\begin{matrix} 1\\ 1 \end{matrix}\right]
+$$
+\end{Lemma}
+
+\begin{proof}{[Induction]}\\
+For $n=1$
+$$
+\left[\begin{matrix} F_1\\ F_2 \end{matrix} \right] = \left[ \begin{matrix} 0   & 1 \\ 1  & 1 \end{matrix}\right]^0 \left[\begin{matrix} 1\\ 1\end{matrix}\right]=I_2\left[\begin{matrix} 1\\ 1\end{matrix}\right]=\left[\begin{matrix} 1\\ 1\end{matrix}\right]
+$$
+For $n=k$. This step is called Induction hypothesis ($IH$)\label{lem1}.
+$$
+\left[\begin{matrix} F_k\\ F_{k+1} \end{matrix} \right] = \left[ \begin{matrix} 0   & 1 \\ 1  & 1 \end{matrix}\right]^{k-1} \left[\begin{matrix} 1\\ 1\end{matrix}\right]
+$$
+Now for $n=k+1$. But from (\ref{fact}) we have
+\begin{align*}
+\left[\begin{matrix} F_{k+1}\\ F_{k+2} \end{matrix}\right] &= \left[ \begin{matrix} 0   & 1 \\ 1  & 1 \end{matrix}\right] \left[\begin{matrix} F_{k}\\ F_{k+1} \end{matrix}\right]\\
+&= \left[ \begin{matrix} 0   & 1 \\ 1  & 1 \end{matrix}\right] \left[ \begin{matrix} 0   & 1 \\ 1  & 1 \end{matrix}\right]^{k-1} \left[\begin{matrix} 1\\ 1\end{matrix}\right] \qquad (by~IH)\\
+&= \left[ \begin{matrix} 0   & 1 \\ 1  & 1 \end{matrix}\right]^{k} \left[\begin{matrix} 1\\ 1\end{matrix}\right]
+\end{align*}
+Hence by using principle of mathematical induction we can conclude that
+$$
+\left[\begin{matrix} F_n\\ F_{n+1} \end{matrix}\right] = \left[ \begin{matrix} 0   & 1 \\ 1  & 1 \end{matrix}\right]^{n-1} \left[\begin{matrix} 1\\ 1 \end{matrix}\right]\qquad \forall n\in \mathbb{N}.
+$$
+\end{proof}
+
+\subsection{Generating Functions }
+
+\begin{Definition}{(Generating Function)}{}
+The (ordinary) \textbf{generating function} for the sequence $a_0, a_1, a_2,\cdots$ of real numbers
+is the formal power series
+$$
+f(x)=a_0+a_1x+a_2x^2+\cdots=\sum_{i=0}^\infty a_ix^i
+$$
+or any equivalent closed form expression.
+\end{Definition}
+
+\textbf{Note}:
+\begin{enumerate}
+  \item Generating functions\footnote{They were invented in $1718$ by French mathematician Abraham De Moivre ($1667-1754$).[Koshy, Catalan numbers with Application pp. 382]} can be used to solve recurrence relations. As we will see soon.
+  \item Each sequence ${a_n}$ defines a unique generating function $f(x)$, and conversely.
+  \item Generating functions are considered as algebraic forms and can be manipulated as such, without regard to actual convergence of the power series.
+\end{enumerate}
+
+\begin{Example}{}{}
+The generating function for the sequence $1, 1, 1, 1, 1,\cdots$ is
+\begin{align}\label{ex1}
+f(x)=1+x+x^2+x^3+\cdots
+\end{align}
+As we know from geometric series the closed form of (\ref{ex1}) is given by
+$$
+f(x)=\frac{1}{1-x}
+$$
+\end{Example}
+
+\begin{Example}{}{}
+The generating function for the sequence $ 1, 1, 1, 1, 1,... $is
+$$1+x+x^2 +x^3 +x^4 +\cdots=\frac{1}{1-x}$$
+Differentiating both sides of this expression produces
+$$1 + 2x + 3x^2 + 4x^3 +\cdots=\frac{1}{(1-x)^2}$$
+Thus, $\frac{1}{(1-x)^2}$ is a closed form expression for the generating function of the sequence $1, 2, 3, 4,...$.
+\end{Example}
+
+\subsection{Recurrence Relation}
+
+\begin{Definition}{}{}
+A \textbf{recurrence relation} for the sequence $a_0, a_1, a_2,\ldots $ is an equation relating the term $a_n$ to certain of the preceding terms $a_i$, $i\le n$, for each $n\geq n_0$.
+\end{Definition}
+
+\begin{Theorem}{(Binet)}{}
+For any $n\in \mathbb{N}$ the $n^{th}$ term of the Fibonacci sequence is given by
+$$F_n=\frac{1}{\sqrt{5}}\biggl[\phi^n-\biggl(-\frac{1}{\phi}\biggl)^n \biggl]$$
+where $\phi$ is a golden ratio.
+\end{Theorem}
+\subsection{Combinatorial proof}
+
+\begin{proof}
+The Fibonacci sequence is defined by the following recurrence relation
+$$ a_n=a_{n-1}+a_{n-2}$$
+This can be rewritten as follows
+\begin{align}\label{fibonacci}
+ a_n-a_{n-1}-a_{n-2}=0
+\end{align}
+Which is clearly a homogeneous equation. The characteristic\footnote{Dr. Yirgalem}($\chi$) equation of (\ref{fibonacci}) is given by
+\begin{align}\label{characteristic}
+\lambda^2-\lambda-1=0
+\end{align}
+Thus using quadratic formula the solutions to (\ref{characteristic}) are
+$$\lambda=\frac{1+\sqrt{5}}{2} \qquad \& \qquad \lambda=\frac{1-\sqrt{5}}{2}$$
+Hence the general solution to the recurrence relation (\ref{fibonacci}) is
+\begin{align}\label{solution}
+a_n=\alpha \biggl( \frac{1+\sqrt{5}}{2}\biggl)^n +\beta\biggl( \frac{1-\sqrt{5}}{2}\biggl)^n
+\end{align}
+But from Fibonacci sequence we know that the values of $a_0$ and $a_1$ are $0$ and $1$ respectively. So by using this we are going to find the values of $\alpha$ and $\beta$\\
+Substitute $n=1$ in (\ref{solution})
+\begin{align*}
+a_1 &=\alpha \biggl( \frac{1+\sqrt{5}}{2}\biggl)^1 +\beta\biggl( \frac{1-\sqrt{5}}{2}\biggl)^1
+\end{align*}
+But $a_1=1,$ then we have
+\begin{align}\label{eq1}
+\alpha \biggl( \frac{1+\sqrt{5}}{2}\biggl) +\beta\biggl( \frac{1-\sqrt{5}}{2}\biggl)=1
+\end{align}
+Substitute $n=2$ in (\ref{solution})
+\begin{align*}
+a_1 &=\alpha \biggl( \frac{1+\sqrt{5}}{2}\biggl)^2 +\beta\biggl( \frac{1-\sqrt{5}}{2}\biggl)^2
+\end{align*}
+But $a_2=1,$ then we have
+\begin{align}\label{eq2}
+\alpha \biggl( \frac{3+\sqrt{5}}{2}\biggl) +\beta\biggl( \frac{3-\sqrt{5}}{2}\biggl)=1
+\end{align}
+From (\ref{eq1}) and (\ref{eq2}) we have two equations with two variable. Hence by using simultaneous equation or other method we will get the values of $\alpha$ and $\beta$ to be $\frac{1}{\sqrt{5}}$ and $\frac{-1}{\sqrt{5}}$ respectively. Therefore we have
+$$
+a_n=\frac{1}{\sqrt{5}} \biggl( \frac{1+\sqrt{5}}{2}\biggl)^n -\frac{1}{\sqrt{5}}\biggl( \frac{1-\sqrt{5}}{2}\biggl)^n
+$$
+\end{proof}
+
+\subsection{Proof by Induction}
+
+\begin{proof}
+\footnote{Alfred and Ingmar}For $n=1$
+\begin{align*}
+F_1+F_2 &=\frac{1}{\sqrt{5}}\biggl[\phi-\frac{1}{\phi} \biggl] +\frac{1}{\sqrt{5}}\biggl[\phi^2-\frac{1}{\phi^2} \biggl]\\
+        &=\frac{1}{\sqrt{5}}\biggl[2\phi-1 \biggl]+\frac{1}{\sqrt{5}}\biggl[\frac{\phi^4-1}{\phi^2} \biggl]\\
+        &=\frac{1}{\sqrt{5}}\biggl[\sqrt{5}\biggl]+\frac{1}{\sqrt{5}}\biggl[\frac{(\phi^2-1)(\phi^2+1)}{\phi^2} \biggl]\\
+        &=1+\frac{1}{\sqrt{5}}\biggl[\frac{\phi(\phi^2-1)}{\phi^2} \biggl] \qquad (\phi^2-1=\phi ~by~(\ref{id2}))\\
+        &=1+\frac{1}{\sqrt{5}}\biggl[\frac{\phi^2-1}{\phi} \biggl]=1+\frac{1}{\sqrt{5}}\biggl[\phi-\frac{1}{\phi} \biggl]\\
+        &=1+\frac{1}{\sqrt{5}}\biggl[\sqrt{5} \biggl]\\
+        &=2=F_3
+\end{align*}
+For $n=k$
+$$
+F_k +F_{k-1}=F_{k-2}
+$$
+Now, for $n=k+1$
+\begin{align*}
+F_{k+1}+F_{k+2} &=\frac{1}{\sqrt{5}}\biggl[\phi^{k+1}-\biggl(-\frac{1}{\phi}\biggl)^{k+1} \biggl] +\frac{1}{\sqrt{5}}\biggl[\phi^{k+2}-\biggl(-\frac{1}{\phi}\biggl)^{k+2} \biggl]\\
+        &=\frac{1}{\sqrt{5}}\biggl[\phi^{k+2}+\phi^{k+1}-\biggl(-\frac{1}{\phi}\biggl)^{k+2}-\biggl(-\frac{1}{\phi}\biggl)^{k+1} \biggl]\\
+        &=\frac{1}{\sqrt{5}}\biggl[\phi^{k+1}(\phi+1)-\biggl(-\frac{1}{\phi}\biggl)^{k+1}\biggl(\biggl(-\frac{1}{\phi}\biggl)+1\biggl) \biggl]\\
+        &=\frac{1}{\sqrt{5}}\biggl[\phi^{k+1}(\phi^2)-\biggl(-\frac{1}{\phi}\biggl)^{k+1}\biggl(-\frac{1}{\phi}\biggl)^2 \biggl]\qquad (  \because \biggl(-\frac{1}{\phi}\biggl)^2= \biggl(-\frac{1}{\phi}\biggl)+1)\\
+        &=\frac{1}{\sqrt{5}}\biggl[\phi^{k+3}-\biggl(-\frac{1}{\phi}\biggl)^{k+3} \biggl]\\
+        &=F_{k+3}
+\end{align*}
+Hence, by principles of mathematical induction it follows that
+$$
+F_n=\frac{1}{\sqrt{5}}\biggl[\phi^n-\biggl(-\frac{1}{\phi}\biggl)^n \biggl] \qquad \forall n\in \mathbb{N}.
+$$
+\end{proof}
+
+\subsection{Linear algebra proof}
+
+\begin{Theorem}{(Binet)}{}
+A closed form of a Fibonacci sequence is given by
+\begin{align}
+F_n=\frac{1}{\sqrt{5}}\biggl[ \phi_1 ^n -\phi_2 ^n\biggl]
+\end{align}
+Where $\phi_1=\frac{1+\sqrt{5}}{2}$ and $\phi_2=\frac{1-\sqrt{5}}{2}$.
+\end{Theorem}
+
+\begin{proof}
+From (\ref{lem1}) we have
+$$
+\left[\begin{matrix} F_n\\ F_{n+1} \end{matrix}\right] = \left[ \begin{matrix} 0   & 1 \\ 1  & 1 \end{matrix}\right]^{n-1} \left[\begin{matrix} 1\\ 1 \end{matrix}\right]
+$$
+
+Let $A=\left[ \begin{matrix} 0   & 1 \\ 1  & 1 \end{matrix}\right]$\\
+If some how we could diagonalize matrix $A$ (i.e to write $A$ in the form $A=PDP^{-1}$ ), taking any powers of $A$ would be simple. Because we know that $A^n=PD^nP^{-1}$ and we would get such a simple formula for $F_n$. So let's start diagonalize $A$.\\
+First let's find the eigenvalues. Which can be found as follows
+\begin{align*}
+ |A-\lambda I_2| &=\left| \begin{matrix} -\lambda   & 1 \\ 1  & 1-\lambda \end{matrix}\right|\\
+                 &=-\lambda(1-\lambda)-1\\
+                 &=\lambda^2 -\lambda-1
+\end{align*}
+Thus, by using quadratic formula we would get
+$$\lambda_1=\frac{1+\sqrt{5}}{2}=\phi_1 \qquad\text{ and }\qquad  \lambda_2=\frac{1-\sqrt{5}}{2}=\phi_2$$
+Now, let's find the corresponding eigenvectors\\
+For $\lambda_1=\phi_1$
+$$(A-\lambda_1I_2)V=\left[ \begin{matrix} 0    \\ 0 \end{matrix}\right]$$
+Where $V=\left[ \begin{matrix} v_1 \\ v_2 \end{matrix}\right]$, then
+\begin{align*}
+(A-\lambda_1I_2)V=(A-\phi_1I_2)V=\left[ \begin{matrix} -\phi_1 & 1    \\ 1& 1-\phi_1 \end{matrix}\right]\left[ \begin{matrix} v_1 \\ v_2 \end{matrix}\right]=\left[ \begin{matrix} 0    \\ 0 \end{matrix}\right]
+\end{align*}
+After multiplying the matrices in the left side and equating with the right side we will get the following system of equation
+\begin{align}
+-\phi_1 v_1+v_2=0\label{12}\\
+v_1+(1-\phi_1)v_2=0\label{14}
+\end{align}
+Multiplying (\ref{14}) by $\phi_1$
+\begin{align}
+\phi_1v_1-v_2=0\label{15}
+\end{align}
+Using (\ref{12}) and (\ref{15})
+$$V=\left[ \begin{matrix} v_1 \\ v_2 \end{matrix}\right]=\left[ \begin{matrix} v_1 \\ \phi_1v_1 \end{matrix}\right]=\left[ \begin{matrix} 1 \\ \phi_1\end{matrix}\right]v_1$$
+Hence the corresponding eigenvector for $\lambda_1$ is $\left[ \begin{matrix} 1 \\ \phi_1\end{matrix}\right]$.\\
+Similarly, one can find that the eigenvector for $\lambda_2$ is $\left[ \begin{matrix} 1 \\ \phi_2\end{matrix}\right]$.
+Now we are going to write matrix in a form $A=PDP^{-1}$, where $P=\left[ \begin{matrix} 1& 1 \\ \phi_1 &\phi_2\end{matrix}\right]\Rightarrow P^{-1}=\frac{1}{\phi_2 -\phi_1}\left[ \begin{matrix} \phi_2 & -1 \\ -\phi_1 &1\end{matrix}\right]$and $D=\left[ \begin{matrix} \phi_1& 0 \\0  &\phi_2\end{matrix}\right]$\\
+Finally, let's compute
+\begin{align*}
+\left[\begin{matrix} F_n\\ F_{n+1} \end{matrix}\right] &= \left[ \begin{matrix} 0   & 1 \\ 1  & 1 \end{matrix}\right]^{n-1} \left[\begin{matrix} 1\\ 1 \end{matrix}\right]\\
+&=\left[ \begin{matrix} 1& 1 \\ \phi_1 &\phi_2\end{matrix}\right]\left[ \begin{matrix} \phi_1& 0 \\0  &\phi_2\end{matrix}\right]^{n-1}\frac{1}{\phi_2 -\phi_1}\left[ \begin{matrix} \phi_2 & -1 \\ -\phi_1 &1\end{matrix}\right]\left[\begin{matrix} 1\\ 1 \end{matrix}\right]\\
+&=\frac{1}{\phi_2 -\phi_1}\left[ \begin{matrix} 1& 1 \\ \phi_1 &\phi_2\end{matrix}\right]\left[ \begin{matrix} \phi_1^{n-1}& 0 \\0  &\phi_2^{n-1}\end{matrix}\right]\left[ \begin{matrix} \phi_2 -1 \\ -\phi_1 +1\end{matrix}\right]\\
+&=\frac{1}{-\sqrt{5}}\left[ \begin{matrix} 1& 1 \\ \phi_1 &\phi_2\end{matrix}\right]\left[ \begin{matrix} \phi_1^{n-1}(\phi_2 -1 )\\ \phi_2^{n-1}(-\phi_1+1)\end{matrix}\right]\\
+&=-\frac{1}{\sqrt{5}}\left[ \begin{matrix} \phi_1^{n-1}(-\phi_1)+\phi_2^{n-1}(\phi_2)\\ \phi_1^{n}(-\phi_1) + \phi_2^{n}(\phi_2)\end{matrix}\right]\\
+&=\frac{1}{\sqrt{5}}\left[ \begin{matrix} \phi_1^{n}-\phi_2^{n}\\ \phi_1^{n+1}-\phi_2^{n+1}\end{matrix}\right]
+\end{align*}
+That was to be shown!
+\end{proof}
+
+\subsection{Proof using generating function }
+
+\begin{proof}
+\footnote{The derivation of the solution by using a generating function is due to Abraham De Moivre (1718).}Consider a Fibonacci sequence which is given by the following recurrence relation
+\begin{align}\label{rec}
+F_n=F_{n-1}+F_{n-2}\qquad \text{ for } n\geq2.
+\end{align}
+And $F_0$ and $F_1$ are defined to be $0$ and $1$ respectively.
+The generating function for Fibonacci sequence is
+$$
+f(x)=F_0+F_1x+F_2x^2+\cdots=\sum_{i=0}^\infty F_ix^i
+$$
+When we assign their respective numbers for each $F_i$'s $f(x)$ becomes
+\begin{align}\label{gen}
+f(x)=0+1x+1x^2+2x^3+3x^4+5x^5+\cdots
+\end{align}
+The generating function (\ref{gen}) won't help us to solve the recurrence relation in (\ref{rec}). So, let's find the closed form. In order to find the closed form we are going to do some trick, which indeed based at how the Fibonacci sequence recursively defined. Here is what we are going to do, first write (\ref{gen}) as it is,
+
+\begin{tabular}{ccccccccccccccccccccccccccccccc}
+  $f(x)$&=& 0&+ 1$x$ &+ 1$x^2$ &+ 2$x^3$ &+ 3$x^4$ &+ 5$x^5$&+$ \cdots$ \\
+  $xf(x)$&=& 0$x$&+ 1$x^2$ &+ 1$x^3$ &+ 2$x^4$ &+ 3$x^5$ &+ 5$x^6$&+$ \cdots$ \\
+  $x^2f(x)$&=& 0$x^2$&+ 1$x^3$ &+ 1$x^4$ &+ 2$x^5$ &+ 3$x^6$ &+ 5$x^7$&+$ \cdots$ \\
+\hline
+$f(x)-xf(x)-x^2f(x)$ &= & 0&+$x$&+$x^2\{1-1\}$&+$0\cdot x^3$&+$0\cdot x^4$&+$0\cdot x^5$&+$\cdots$
+\end{tabular}\\
+Clearly, on the right side we are left with $x$ because the summands goes to $0$. Hence
+ $$
+ f(x)-xf(x)-x^2f(x) = x
+ $$
+Thus,
+\begin{align}\label{closed}
+ f(x)= \frac{x}{1-x-x^2}
+\end{align}
+So far, we have found a generating function (\ref{closed}) for (\ref{rec}). Now, let's use method partial fraction
+\begin{align*}
+ f(x)= \frac{-x}{x^2+x-1}=\frac{-x}{(x+\phi_1)(x+\phi_2)}=\frac{A}{(x+\phi_1)}+\frac{B}{(x+\phi_2)}
+\end{align*}
+To find $A$ and $B$ we are going to solve the following system of equation
+\begin{align*}
+A+B=-1\\
+\phi_2A+\phi_1B=0
+\end{align*}
+Which results $A=\frac{-\phi_1}{\sqrt{5}}$ and $B=\frac{\phi_2}{\sqrt{5}}$.Thus,
+\begin{align*}
+f(x)&=-\frac{1}{\sqrt{5}}\frac{\phi_1}{(x+\phi_1)}+\frac{1}{\sqrt{5}}\frac{\phi_2}{(x+\phi_2)}\\
+    &=\frac{1}{\sqrt{5}}\biggl[\frac{\phi_2}{(x+\phi_2)}-\frac{\phi_1}{(x+\phi_1)}\biggl]\\
+    &=\frac{1}{\sqrt{5}}\biggl[\frac{1}{(\frac{x}{\phi_2}+1)}-\frac{1}{(\frac{x}{\phi_1}+1)}\biggl]
+    =\frac{1}{\sqrt{5}}\biggl[\frac{1}{(-\phi_1x+1)}-\frac{1}{(-\phi_2x+1)}\biggl]\\
+    &=\frac{1}{\sqrt{5}}\biggl[\frac{1}{(1-\phi_1x)}-\frac{1}{(1-\phi_2x)}\biggl]\\
+\end{align*}
+But we know that $\frac{1}{1-ax}=1+ax+a^2x^2+a^3x^3+\cdots$. Hence
+$$\frac{1}{1-\phi_1x}=1+\phi_1x+\phi_1^2x^2+\phi_1^3x^3+\cdots$$
+$$\frac{1}{1-\phi_2x}=1+\phi_2x+\phi_2^2x^2+\phi_2^3x^3+\cdots$$
+Then, we will get
+\begin{align*}
+f(x)&=\frac{1}{\sqrt{5}}\biggl[\frac{1}{(1-\phi_1x)}-\frac{1}{(1-\phi_2x)}\biggl]\\
+    &=\frac{1}{\sqrt{5}}\biggl[1+\phi_1x+\phi_1^2x^2+\phi_1^3x^3+\cdots-(1+\phi_2x+\phi_2^2x^2+\phi_2^3x^3+\cdots)\biggl]\\  &=\frac{1}{\sqrt{5}}\biggl[(\phi_1-\phi_2)x+(\phi_1^2-\phi_2^2)x^2+(\phi_1^3-\phi_2^3)x^3+\cdots\biggl]\\
+    &=\sum_{n=0}^{\infty}\frac{1}{\sqrt{5}}(\phi_1^n-\phi_2^n)x^n
+\end{align*}
+Therefore,
+$$
+F_n=\frac{1}{\sqrt{5}}\biggl[\phi_1^n-\phi_2^n \biggl]
+$$
+\end{proof}
+
+\section{Binomial Theorem}
+
+\begin{Theorem}{(Newton)}{}
+For any $x,y\in \mathbb{C}$ and $n\in \mathbb{N}$,
+$$(x+y)^n=\sum_{k=0}^{n}\binom{n}{k}x^{n-k}y^k$$
+\end{Theorem}
+
+\begin{proof}
+Clearly, it's true for $n=1$. Assume it is true for $n$. We are going to show that it is true for $n+1$
+\begin{align*}
+(x+y)^{n+1}&=(x+y)(x+y)^n\\
+           &=(x+y)\sum_{k=0}^n\binom{n}{k}x^{n-k}y^k     \tag{by Induction Hypothesis}\\
+           &=x\sum_{k=0}^n\binom{n}{k}x^{n-k}y^k+y\sum_{k=0}^n\binom{n}{k}x^{n-k}y^k\\
+           &=\sum_{k=0}^n\binom{n}{k}x^{n+1-k}y^k+\sum_{k=0}^n\binom{n}{k}x^{n-k}y^{k+1}\\
+           &=x^{n+1}y^0+\sum_{k=1}^n\binom{n}{k}x^{n+1-k}y^k+\sum_{k=0}^n\binom{n}{k}x^{n-k}y^{k+1}
+\end{align*}
+But
+\begin{align*}
+\sum_{k=0}^n\binom{n}{k}x^{n-k}y^{k+1}&=\binom{n}{0}x^n y^1+\binom{n}{1}x^{n-1}y^2+\cdots+\binom{n}{n-1} x^2 y^n+\binom{n}{n} x^0 y^{n+1}\\
+&=\sum_{k=1}^n\binom{n}{k-1}x^{n+1-k} y^k+x^0 y^{n+1}
+\end{align*}
+Now
+\begin{align*}
+(x+y)^{n+1}&=x^{n+1} y^0+\sum_{k=1}^n\binom{n}{k}x^{n+1-k} y^k+\sum_{k=1}^n\binom{n}{k-1}x^{n+1-k}y^k+x^0y^{n+1}\\
+           &=x^{n+1} y^0+x^0 y^{n+1}+\sum_{k=1}^n\biggl[\binom{n}{k}+\binom{n}{k-1}\biggl]x^{n+1-k}y^k
+\end{align*}
+From Pascal's Identity(\ref{pascali}) we have
+\begin{align*}
+\binom{n}{k}+\binom{n}{k-1}=\binom{n+1}{k}
+\end{align*}
+Thus
+\begin{align*}
+(x+y)^{n+1}&=x^{n+1} y^0+x^0 y^{n+1}+\sum_{k=1}^n\binom{n+1}{k}x^{n+1-k}y^k\\
+           &=x^0 y^{n+1}+\sum_{k=0}^n\binom{n+1}{k}x^{n+1-k} y^k\\
+           &=\sum_{k=0}^{n+1}\binom{n+1}{k}x^{n+1-k} y^k
+\end{align*}
+Hence
+\begin{align*}
+(x+y)^{n+1}=\sum_{k=0}^{n+1}\binom{n+1}{k}x^{n+1-k}y^k
+\end{align*}
+That was to be shown.
+\end{proof}
+
+\chapter{Analysis}
+\renewcommand\chapterillustration{Cauchy}
+\section{Limit and Continuity}
+
+\begin{Definition}{Limit}{}
+Let $f$ be a function defined at each point of some open interval containing $a$ except possibly at $a$ itself. The number $L$ is the limit of $f(x)$ as $x$ approaches $a$,
+\begin{align*}
+\lim_{x\rightarrow a}f(x)=L\quad
+\text{ iff }\quad(\forall \epsilon>0)(\exists \delta=\delta(\epsilon)>0)  \ni |x-a|<\delta \Rightarrow |f(x)-L|<\epsilon
+\end{align*}
+\end{Definition}
+
+\begin{Theorem}{\textbf{(Uniqueness Theorem)}}{}
+If $f(x) \rightarrow p$ and $f(x) \rightarrow q$ as $x \rightarrow a$ then $p = q$.
+\end{Theorem}
+
+\begin{proof}
+Let $\frac{\epsilon}{2}$ be given. There exists $\delta_{1}$ and $\delta_{2}$ such that when
+\[|x - a| < \delta_{1} \Rightarrow |f(x) - p| < \frac{\epsilon}{2} \text{ and } |x - a|< \delta_{2} \Rightarrow |f(x) - q| < \frac{\epsilon}{2}.\]
+Set $\delta_{m} = \min \lbrace \delta_{1}, \delta_{2} \rbrace$. Then by the triangle inequality when
+\[|x - a| < \delta_{m} \text{ we have } |p - q| \leq |p - f(x)| + |f(x) - q| \leq \frac{\epsilon}{2} + \frac{\epsilon}{2} = \epsilon\]
+and since $\epsilon$ was arbitrary $|p - q| \leq 0 \Rightarrow p = q$.
+\end{proof}
+
+\subsection{Basic Properties of Limit}
+
+\begin{Theorem}{\textbf{(Sum and Difference Rule)}}{}
+If $\lim_{x\rightarrow a}f(x)=L$ and $\lim_{x\rightarrow a}g(x)=M$, then
+\[
+\lim_{x\rightarrow a}[f(x)+g(x)]=L+M
+\]
+\end{Theorem}
+
+\begin{proof}
+WTS: $(\forall \epsilon>0)(\exists \delta=\delta(\epsilon)>0)  \ni  |x-a|<\delta \Rightarrow |f(x)+g(x)-(L+M)|< \epsilon$\\
+Let $\epsilon>0$ then because $\lim_{x\rightarrow a}f(x)=L$ and $\lim_{x\rightarrow a}g(x)=M$ there exists $\delta_1>0$ and $\delta_2>0$ such that
+\begin{align*}
+\text{If } 0<|x-a|<\delta_1,\text{ then } |f(x)-L|<\epsilon/2.\\
+\text{If } 0<|x-a|<\delta_2,\text{ then } |g(x)-L|<\epsilon/2.
+\end{align*}
+Now choose $\delta=\min(\delta_1,\delta_2)$, then we need to show that
+\begin{align*}
+|x-a|<\delta \Rightarrow |f(x)+g(x)-(L+M)|<\epsilon
+\end{align*}
+Assume that $0<|x-a|<\delta$ we then get
+\begin{align*}
+|f(x)+g(x)-(L+M) |&=|f(x)-L+g(x)-M|\\
+                  &\leq|f(x)-L|+|g(x)-M|      \tag{Triangular inequality}\\
+                  &\leq\epsilon/2+\epsilon/2\leq \epsilon
+\end{align*}
+Similarly, one can easily prove that $\lim_{x\rightarrow a}[f(x)-g(x)]=L-M$.
+\end{proof}
+
+\begin{Lemma}{}{}\label{lemprolim}
+If $\lim_{x\to a} f(x) = L$, then there exists $\delta>0$ such that $\vert f(x)\vert < 1 + \vert L\vert$ whenever $0<\vert x-a\vert <\delta$.
+\end{Lemma}
+
+\begin{proof}
+We know for any $\epsilon>0$ there exist $\delta>0$ such that $\vert f(x)-L\vert < \epsilon$ whenever $0<\vert x-a\vert <\delta$.\\
+Since this is true for any $\epsilon>0$, it works for $\epsilon=1$. Then there exists $\delta>0$ such that $\vert f(x)- L\vert < 1$ whenever $0<\vert x-a\vert <\delta$.\\
+By the triangle inequality we get
+\begin{align*}
+\vert f(x)\vert
+& = \vert f(x)-L + L \vert \\
+& \leq \vert f(x) -L\vert + \vert L\vert \\
+& < 1 + \vert L\vert,
+\end{align*}
+which gives the desired control on the values of $f$ near $a$.
+\end{proof}
+
+\begin{Theorem}{\textbf{(Product Rule)}}{}
+If $\lim_{x\to a}f(x) = L$ and $\lim_{x\to a}g(x) = M$, then $\lim_{x\to a} f(x)g(x) = LM$.
+\end{Theorem}
+
+\begin{proof}
+We want to control $\vert f(x)g(x) - LM \vert$ by restricting $x$ near $a$. By adding $0$ in a clever way and using properties of the absolute value, we have that
+\begin{align*}
+\vert f(x)g(x) - LM \vert
+& = \vert f(x)g(x) -f(x)M + f(x)M - LM\vert \\
+& \leq \vert f(x)g(x) - f(x)M\vert + \vert f(x)M - LM\vert \\
+& = \vert f(x)\vert\ \vert g(x) - M\vert  + \vert M\vert\ \vert f(x)-L\vert.
+\end{align*}
+Because $\lim_{x\to a}f(x) = L$ and $\lim_{x\to a}g(x)=M$, we can control the terms $\vert f(x)-L\vert$ and $\vert g(x)-M\vert$. There is no problem controlling the constant term $\vert M\vert$. But what about controlling the term $\vert f(x)\vert$?\\
+This is where Lemma (\ref{lemprolim}) comes into play. Because $\lim_{x\to a}f(x)=L$, there is by Lemma (\ref{lemprolim}) a $\delta_1>0$ such that $\vert f(x)\vert < 1 + \vert L\vert$ whenever $0<\vert x-a\vert <\delta_1$.\\
+We then have that
+\[  \vert f(x)\vert\ \vert g(x) - M\vert  + \vert M\vert\ \vert f(x)-L\vert < (1+\vert L\vert)\vert g(x)-M\vert + \vert M\vert\ \vert f(x)-L\vert.\]
+We can control the term $(1+\vert L\vert)\vert g(x)-M\vert$ because $\lim_{x\to a}g(x)=M$: there exists $\delta_2>0$ such that
+\[ \vert g(x) - M \vert < \frac{\epsilon}{2(1+\vert L\vert)}\]
+whenever $0<\vert x-a\vert <\delta_2$.\\
+We then have that
+\[ (1+\vert L\vert)\vert g(x)-M\vert + \vert M\vert\ \vert f(x)-L\vert < \frac{\epsilon}{2}  + \vert M\vert\ \vert f(x)-L\vert.\]
+If $M=0$, then by choosing $\delta< \min{\delta_1,\delta_2}$, for the restriction $0<\vert x-a\vert < \delta$ we get the control
+\[ \vert f(x)g(x)-LM\vert < \frac{\epsilon}{2} + 0 < \epsilon.\]
+If $M\ne 0$, then there is $\delta_3$ such that $\vert f(x)-L\vert < \epsilon/\vert M\vert$ when $0<\vert x-a\vert <\delta_3$.\\
+In this case, the choice of $\delta< \min\{\delta_1,\delta_2,\delta_3\}$ the restriction $0<\vert x-a\vert < \delta$ gives the control
+\[ \vert f(x)g(x) - LM \vert < \frac{\epsilon}{2} + \frac{\epsilon}{2}  = \epsilon.\]
+Thus we have shown that the limit of a product is the product of the limits.
+\end{proof}
+
+
+\newpage
+
+\section{Derivative}
+
+\begin{Definition}{(Derivative)}{}
+If a function $f(x)$ is continuous and differentiable, then its derivative is given by
+\begin{align}\label{diffdef1}
+f^{'}(c)=\lim_{x\rightarrow c}\frac{f(x)-f(c)}{x-c}
+\end{align}
+or
+\begin{align}\label{diffdef2}
+f^{'}(c)=\lim_{h\rightarrow 0}\frac{f(x+h)-f(c)}{h}
+\end{align}
+\end{Definition}
+
+\begin{Theorem}{(Differentiability implies Continuity)}{}\label{diffcont}
+If $f(x)$ is differentiable at a point $c$, then its is continuous at $c$.
+\end{Theorem}
+
+\begin{proof}
+Let $f(x)$ be differentiable function. To prove that $f$ is continuous at $c$, we have to show that $\lim_{x\rightarrow c} f(x)=f(c)$. We do this by showing that the difference $f(x)-f(c)$ approaches $0$.
+We divide and multiply $f(x)-f(c)$ by $x-c$ for ($x\neq c$):
+\[
+f(x)-f(c)=\frac{f(x)-f(c)}{x-c}(x-c)
+\]
+Thus, using the Product Law of limits, we can write
+\begin{align*}
+\lim_{x\rightarrow c} [f(x)-f(c)] &=\frac{f(x)-f(c)}{x-c}(x-c)\\
+                                  &=\lim_{x\rightarrow c}\frac{f(x)-f(c)}{x-c}\cdot \lim_{x\rightarrow c}(x-c)\\
+                                  &=f'(x)\cdot 0=0\tag{Differentiability of $f$ at $a$}
+\end{align*}
+Now,
+\begin{align*}
+\lim_{x\rightarrow c} f(x)&=\lim_{x\rightarrow c} [f(x)-f(c)+f(c)]\\
+                          &=\lim_{x\rightarrow c} [f(x)-f(c)]+\lim_{x\rightarrow c}f(c)\\
+                          &=0+f(c)=f(c)
+\end{align*}
+Therefore, $f$ is continuous at $c$.
+\end{proof}
+\begin{Remark}{}{}
+The converse of Theorem (\ref{diffcont}) is false; that is, there are functions that are continuous but not differentiable. The most common example is the absolute valued function. In fact, there is a nowhere differentiable function which is continuous everywhere\footnote{Karl Weierstrass($1872$)}.
+\end{Remark}
+\subsection{Rules for derivative}
+\begin{enumerate}
+  \item \textbf{Power Rule}\\
+Let $f(x)=x^n$ then the derivative of $f$ is given by
+$$ f'(x)=nx^{n-1}$$
+\begin{proof}[Method 1]\footnote{James Stewart Calculus 6th ed.}
+In our first proof we use the following identity
+\begin{align}\label{dervid}
+x^n-a^n=(x-a)(x^{n-1}+x^{n-2}a+\cdots+x^2a^{n-3}+xa^{n-2}+a^{n-1})
+\end{align}
+Now $f(x)=x^n$, using definition (\ref{diffdef1})
+\begin{align*}
+f'(x)&=\lim_{x\rightarrow a} \frac{f(x)-f{a}}{x-a}\\
+     &=\lim_{x\rightarrow a} \frac{x^n-a^n}{x-a}\\
+     &=\lim_{x\rightarrow a} \frac{\hcancel[red]{(x-a)}(x^{n-1}+x^{n-2}a+\cdots+x^2a^{n-3}+xa^{n-2}+a^{n-1})}{\hcancel[red]{(x-a)}},\qquad \text{by } (\ref{dervid})\\
+     &=\lim_{x\rightarrow a} (x^{n-1}+x^{n-2}a+\cdots+x^2a^{n-3}+xa^{n-2}+a^{n-1}),\tag{$x\neq a$} \\
+     &=\underbrace{a^{n-1}+a^{n-1}+\cdots+a^{n-1}+a^{n-1}}_{n\text{ times}}\\
+     &=na^{n-1}
+\end{align*}
+\end{proof}
+\begin{proof}[Method 2]
+To use definition (\ref{diffdef2}), we need to use Binomial theorem to expand $(x+h)^n$.
+\begin{align}
+(x+h)^n = x^n +nx^{n-1}h+\frac{n(n-1)}{2}x^{n-2}h^2+\cdots+nxh^{n-1}+h^n
+\end{align}
+Using definition (\ref{diffdef2}) the derivative of $f(x)=x^n$ is
+\begin{align*}
+f'(x)&=\lim_{h\rightarrow 0}\frac{f(x+h)-f(x)}{h}\\
+     &=\lim_{h\rightarrow 0}\frac{(x+h)^n-x^n}{h}\\
+     &=\lim_{h\rightarrow 0}\frac{\biggl[x^n+nx^{n-1}h+ \frac{n(n-1)}{2}x^{n-2}h^2 +\cdots+nxh^{n-1}+h^n\biggl]-x^n}{h}\\
+     &=\lim_{h\rightarrow 0}\frac{nx^{n-1}h+\frac{n(n-1)}{2}x^{n-2}h^2 +\cdots+nxh^{n-1}+h^n}{h}\\
+     &=\lim_{h\rightarrow 0}\biggl[nx^{n-1}+\underbrace{\frac{n(n-1)}{2}x^{n-2}h +\cdots+nxh^{n-2}+h^{n-1}}_{\text{goes to }0}\biggl]\\
+     &=nx^{n-1}
+\end{align*}
+\end{proof}
+\item \textbf{Constant multiple rule}\\
+If $c$ is a constant and is a $f$ differentiable, then
+\begin{align}
+\frac{d}{dx}[cf(x)]=c\frac{d}{dx}f(x)
+\end{align}
+\begin{proof}
+Let $g(x)=cf(x)$, then
+\begin{align*}
+g'(x)&=\lim_{h\rightarrow 0}\frac{g(x+h)-g(x)}{h}=\lim_{h\rightarrow 0}\frac{cf(x+h)-cf(x)}{h}\\
+     &=\lim_{h\rightarrow 0}c\biggl[\frac{f(x+h)-f(x)}{h}\biggl]\\
+     &=c\lim_{h\rightarrow 0}\frac{f(x+h)-f(x)}{h}\\
+     &=cf'(x)
+\end{align*}
+\end{proof}
+
+\item \textbf{Sum and Difference rule}\\
+If $f$ and $g$ are differentiable, then
+\begin{align}
+(f+g)'(x)=f'(x)+g'(x)
+\end{align}
+
+\begin{proof}
+By using definition (\ref{diffdef2})
+\begin{align*}
+(f(x)+g(x))'&=\lim_{h\rightarrow 0}\frac{[f(x+h)+g(x+h)]-[f(x)+g(x)]}{h}\\
+            &=\lim_{h\rightarrow 0}\frac{[f(x+h)-f(x)]+[g(x+h)-g(x)]}{h}\\
+            &=\lim_{h\rightarrow 0}\biggl[\frac{[f(x+h)-f(x)]}{h}+\frac{[g(x+h)-g(x)]}{h}\biggl]\\
+            &=\lim_{h\rightarrow 0}\biggl[\frac{[f(x+h)-f(x)]}{h}\biggl]-\lim_{h\rightarrow 0}\biggl[\frac{[g(x+h)-g(x)]}{h}\biggl]\\
+            &=f'(x)+g'(x)
+\end{align*}
+Similarly, it is easy to prove that $(f-g)'(x)=f'(x)-g'(x)$.
+\end{proof}
+\item \textbf{Product rule}\\
+If $f$ and $g$ are differentiable, then
+\begin{align}
+(f\cdot g)'(x)=f'(x)g(x)+f(x)g'(x)
+\end{align}
+\begin{proof}
+By definition (\ref{diffdef1})
+\begin{align*}
+(f\cdot g)'(x)&=\lim_{x_0\rightarrow x}\frac{f(x_0)g(x_0)-f(x)g(x)}{x_0-x}\\
+              &=\lim_{x_0\rightarrow x}\frac{f(x_0)g(x_0)-f(x_0)g(x)+f(x_0)g(x)-f(x)g(x)}{x_0-x}\\
+              &=\lim_{x_0\rightarrow x}\frac{f(x_0)(g(x_0)-g(x))+g(x)(f(x_0)-f(x))}{x_0-x}\\
+              &=\lim_{x_0\rightarrow x}\biggl[\frac{f(x_0)(g(x_0)-g(x))}{x_0-x}+\frac{g(x)(f(x_0)-f(x))} {x_0-x}\biggl]\\
+              &=\lim_{x_0\rightarrow x}\biggl[\frac{(f(x_0)-f(x))g(x)}{x_0-x}+ \frac{f(x_0)(g(x_0)-g(x))} {x_0-x}\biggl]\\
+              &=\lim_{x_0\rightarrow x}\biggl[\frac{f(x_0)-f(x)}{x_0-x}\biggl]g(x)+\lim_{x_0\rightarrow x}f(x_0)\lim_{x_0\rightarrow x}\biggl[\frac{g(x_0)-g(x)}{x_0-x}\biggl]\\
+              &=f'(x)g(x)+f(x)g'(x)
+\end{align*}
+\end{proof}
+\item \textbf{Quotient rule}\\
+If $f$ and $g$ are differentiable, then
+\begin{align}
+\biggl(\frac{f}{g}\biggl)'(x)=
+\end{align}
+\item \textbf{Chain rule}
+If $f$ and $g$ are differentiable, then
+\begin{align}
+(f(g(x)))'=
+\end{align}
+\end{enumerate}
+
+\newpage
+
+\section{Integral}
+
+\begin{Theorem}{Fundamental Theorem of Calculus Part $1$}{}
+If $f$ is continuous on $[a,b]$, then the function $g$ defined by
+\begin{align}
+g(x)=\int_{a}^{x}f(t)dt\qquad a\leq x\leq b
+\end{align}
+is continuous on $[a,b]$ and differentiable on $(a,b)$, and $g'(x)=f(x)$.
+\end{Theorem}
+
+\begin{Theorem}{Fundamental Theorem of Calculus Part $2$}{}
+If $f$ is continuous on $[a,b]$, then
+\begin{align}
+\int_{a}^{b}f(x)=F(b)-F(a)
+\end{align}
+where $F$ is any antiderivative of $f$, that is, a function such that $F'=f$.
+\end{Theorem}
+
+\chapter{Inequalities}
+\renewcommand\chapterillustration{hardy}
+
+\section{Young's inequality}
+\begin{Theorem}{(Young, 1912)}{}\label{youngthm1}
+Let $\alpha$ and $\beta$ be any positive real numbers. For any $p>1$ define $q$ such that $\frac{1}{p}+\frac{1}{q}=1$ ($p$ and $q$ are said to be conjugate exponents), then we have
+\begin{equation}
+\alpha \beta \le \frac{\alpha^p}{p}+\frac{\beta^q}{q}
+\end{equation}
+with equality when $\alpha^p=\beta^q$.
+\end{Theorem}
+
+\begin{proof}
+Obviously, for $\alpha=0$, $\beta=0$ this inequality holds. Suppose $\alpha\neq 0$ and $\beta\neq 0$. Consider a function $u=t^{p-1}$
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=.8\textwidth]{Younginequality.png}
+\caption{Young's Inequality}\label{yangfig}
+\end{figure}
+
+Then the area of the rectangle (see Figure \ref{yangfig})
+\begin{align*}
+\alpha\beta&\le \int_{0}^{\alpha}t^{p-1}dt+\int_{0}^{\beta}u^{q-1}du\\
+           &=\biggl(\frac{t^p}{p}\biggl)_{0}^{\alpha} + \biggl(\frac{u^q}{q}\biggl)_{0}^{\beta}\\
+           &=\frac{\alpha^p}{p}+\frac{\beta^q}{q}
+\end{align*}
+\end{proof}
+
+\begin{Lemma}{}{}\label{holdlem1}
+Let $(\bar{\xi}_j)$ and $(\bar{\eta}_j)$ be two sequences such that
+\[\sum_{j=1}^{\infty}|\bar{\xi}_j|^p=1,\qquad \sum_{j=1}^{\infty}|\bar{\eta}_j|^q=1\]
+Then
+\[\sum_{j=1}^{\infty}|\bar{\xi}_j\bar{\eta}_j|\le 1\]
+where $p$ and $q$ are conjugate exponents.
+\end{Lemma}
+
+\begin{proof}
+Take $\alpha=|\bar{\xi}_j|$ and $\beta=|\bar{\eta}_j|$.\\
+Use (\ref{youngthm1}) so that
+\[|\bar{\xi}_j\bar{\eta}_j|\le \frac{1}{p}\bigl|\bar{\xi}_j\bigl|^p+\frac{1}{q}\bigl|\bar{\eta}_j\bigl|^q\]
+Take summation
+\[\sum_{j=1}^{\infty}|\bar{\xi}_j\bar{\eta}_j|\le \frac{1}{p}+\frac{1}{q}=1\]
+\end{proof}
+
+\section{Holder's inequality}
+
+\begin{Theorem}{(Holder, 1889)}{}\label{holinq}
+Let $x=(\xi_j)\in \ell^p$, $y=(\eta_j)\in\ell^q$ and $p>1$. Then we have
+\begin{equation}
+\sum_{j=1}^{\infty} |\xi_j\eta_j| \le \biggl(\sum_{k=1}^{\infty} |\xi_k|^p\biggl)^{\frac{1}{p}}\biggl(\sum_{m=1}^{\infty} |\eta_m|^q\biggl)^{\frac{1}{q}}
+\end{equation}
+where $p$ and $q$ are conjugate exponents.
+\end{Theorem}
+
+\begin{proof}
+Take
+\[\bar{\xi}_j=\frac{\xi_j}{\biggl(\sum_{k=1}^{\infty}|\xi_k|^p\biggl)^{\frac{1}{p}}},\qquad \bar{\eta}_j=\frac{\eta_j}{\biggl(\sum_{m=1}^{\infty}|\eta_m|^q\biggl)^{\frac{1}{q}}}\]
+Notice that
+
+\[\sum_{j=1}^{\infty}|\bar{\xi}_j|^p=1\quad\text{ and }\quad\qquad \sum_{j=1}^{\infty}|\bar{\eta}_j|^q=1\]
+Now use (lemma \ref{holdlem1}) to get
+\begin{equation}
+\sum_{j=1}^{\infty} |\xi_j\eta_j| \le \biggl(\sum_{k=1}^{\infty} |\xi_k|^p\biggl)^{\frac{1}{p}}\biggl(\sum_{m=1}^{\infty} |\eta_m|^q\biggl)^{\frac{1}{q}}
+\end{equation}
+\end{proof}
+
+\section{Minkowski's inequality}
+
+\begin{Theorem}{(Minkowski, 1896)}{}
+Let $x=(\xi_j)\in \ell^p$, $y=(\eta_j)\in\ell^p$ and $p\ge1$. Then we have
+\begin{equation}
+\biggl(\sum_{j=1}^{\infty} |\xi_j+\eta_i|^p\biggl)^{\frac{1}{p}} \le \biggl(\sum_{k=1}^{\infty} |\xi_k|^p\biggl)^{\frac{1}{p}} + \biggl(\sum_{m=1}^{\infty} |\eta_i|^p\biggl)^{\frac{1}{p}}
+\end{equation}
+\end{Theorem}
+
+\begin{proof}
+For $p=1$, use triangle inequality and apply summation.\\
+Let $p>1$ and let $\xi_j+\eta_j=\omega_j$
+\begin{align}
+|\omega_j|^p=|\xi_j+\eta_j|^p&=|\xi_j+\eta_j||\omega_j|^{p-1}\\
+                             &\le\underbrace{|\xi_j||\omega_j}_{\text{I}}|^{p-1}+\underbrace{|\eta_j||\omega_j}_{\text{II}}|^{p-1}\label{minko1}
+\end{align}
+Hence we first prove the result by choosing $j=1,\ldots,n$ (any fixed $n$)
+\[\text{I}:\sum_{j=1}^{n}|\xi_j||\omega_j|^{p-1}\]
+where $x=(\xi_j)\in\ell^p$ and $(|\omega_j|^{p-1})\in\ell^{q}$. Since
+\[(|\omega_j|^{p-1})^q=|\omega_j|^{(p-1)q}=|\omega_j|^{p}\qquad \text{where }\frac{1}{p}+\frac{1}{q}=1\]
+\[\sum_{j=1}^{n}\biggl(|\omega_j|^{(p-1)q}\biggl)=\sum_{j=1}^{n}|\omega_j|^{p}<\infty \Rightarrow (|\omega_j|^{p-1})\in\ell^{q}\]
+Use Holder's inequality(\ref{holinq})
+\begin{align}
+\text{I}:\sum_{j=1}^{n}|\xi_j||\omega_j|^{p-1}\le \biggl(\sum_{k=1}^{n}|\xi_j|^p\biggl)^{\frac{1}{p}}\biggl(\sum_{m=1}^{n}(|\omega_m|^{p-1})^q\biggl)^{\frac{1}{q}}
+=\biggl(\sum_{k=1}^{n}|\xi_j|^p\biggl)^{\frac{1}{p}}\biggl(\sum_{m=1}^{n}|\omega_m|^p\biggl)^{\frac{1}{q}}\label{minko2}
+\end{align}
+Similarly,
+\begin{align}\label{minko3}
+\text{II}:\sum_{j=1}^{n}|\eta_j||\omega_j|^{p-1}\le \biggl(\sum_{k=1}^{n}|\eta_j|^p\biggl)^{\frac{1}{p}}\biggl(\sum_{m=1}^{n}|\omega_m|^p\biggl)^{\frac{1}{q}}
+\end{align}
+Thus, using (\ref{minko1},\ref{minko2},\ref{minko3}) we conclude that
+\begin{align*}
+\sum_{j=1}^{n}|\omega_j|^p\le \sum_{j=1}^{n}(|\xi_j|+|\eta_j|)|\omega_j|^{p-1}
+                          \le \biggl[\biggl(\sum_{k=1}^{n}|\xi_j|^p\biggl)^{\frac{1}{p}}+\biggl(\sum_{k=1}^{n}|\eta_j|^p\biggl)^{\frac{1}{p}}\biggl]\cdot\biggl(\sum_{m=1}^{n}|\omega_m|^p\biggl)^{\frac{1}{q}}
+\end{align*}
+Let $n\to \infty$
+\[\biggl(\sum_{j=1}^{\infty}|\omega_j|^p\biggl)^{1-\frac{1}{q}}\le\biggl(\sum_{k=1}^{\infty}|\xi_j|^p\biggl)^{\frac{1}{p}}+\biggl(\sum_{k=1}^{\infty}|\eta_j|^p\biggl)^{\frac{1}{p}}
+\]
+Therefore
+\[\biggl(\sum_{j=1}^{\infty}|\omega_j|^p\biggl)^{\frac{1}{p}}\le\biggl(\sum_{k=1}^{\infty}|\xi_j|^p\biggl)^{\frac{1}{p}}+\biggl(\sum_{k=1}^{\infty}|\eta_j|^p\biggl)^{\frac{1}{p}}
+\]
+%That is
+%\[\biggl(\sum_{j=1}^{\infty}|\xi_j+\eta_j|^p\biggl)^{\frac{1}{p}}\le\biggl(\sum_{k=1}^{\infty}|\xi_j|^p\biggl)^{\frac{1}{p}}+\biggl(\sum_{k=1}^{\infty}|\eta_j|^p\biggl)^{\frac{1}{p}}\]
+\end{proof}
+
+\part{Additional}
+
+\appendix
+\cleardoublepage\part*{Appendix}
+
+\chapter{Fake Proofs}
+\renewcommand\chapterillustration{fermat}
+
+\section{$1=2$}
+\begin{proof}[Proof 1]\footnote{Taking one $x$ as a variable and the other $x$ as constant.}
+$$x^2=\underbrace{x+x+\cdots+x}_{(x\text{ times})}$$
+$$\frac{d}{dx}x^2=\frac{d}{dx}[\underbrace{x+x+\cdots+x}_{(x\text{ times})}]$$
+$$2x=1+1+\cdots+1=x$$
+$$2=1$$
+\end{proof}
+\begin{proof}[Proof 2]%\footnote{Division by zero.}
+Suppose that $a = b$, then
+\begin{align*}
+ab & =  a^2\, \tag{Multiplying $a=b$ by $a$.}\\
+ab-b^2 & =  a^2 - b^2\, \tag{Subtract $b^2$}\\
+ b(a-b) & =  (a+b)(a-b)\, \tag{Factoring $a-b$}\\
+ b & =  a + b = 2b\,\tag{Cancel $a-b$ and use $a=b$}\\
+ 1 & =  2\,
+\end{align*}
+\end{proof}
+
+\section{$a=b$}
+\begin{proof}
+Let $a$ and $b$ be two unequal numbers, and let $c$ be their arithmetic mean, hence
+\begin{align*}
+          a + b &= 2c\,\\
+ (a + b)(a - b) &= 2c(a - b)\,\\
+      a^2 - 2ac &= b^2 - 2bc\,\\
+a^2 - 2ac + c^2 &= b^2 - 2bc + c^2\,\\
+      (a - c)^2 &= (b - c)^2\,\\
+              a &= b\,
+\end{align*}
+\end{proof}
+
+
+
+\newpage
+\chapter{Taylor Series}
+\renewcommand\chapterillustration{taylor}
+
+\section{Introduction}
+\begin{Definition}{Taylor Expansion}{}\label{maclaurine}
+Let $f$ be a function with derivative of all orders throughout some interval containing $a$ as an interior point. Then Taylor Series generated by $f$ at $x=a$, is
+\begin{align*}
+    \sum_{n=0}^\infty \frac{f^{(n)}(a)(x-a)^n}{n!}=f(a)+f'(a)(x-a)+\cdots
+    +\frac{f^{(n)}(a)(x-a)^n}{n!}+\cdots
+\end{align*}
+\end{Definition}
+
+\begin{Remark}{Maclaurine}{}
+The Taylor series generated by $x=0$, is called Maclaurine Series given by
+\begin{align*}
+\sum_{n=0}^\infty \frac{f^{(n)}(0)(x)^n}{n!}=f(0)+f'(0)(x)+\cdots+\frac{f^{n}(0)(x)^n}{n!}+\cdots
+\end{align*}
+\end{Remark}
+
+\begin{Example}{$e^x$}{}
+Taylor expansion of $e^x$
+$$\frac{d}{dx}e^x=\frac{d^2}{dx^2}e^x=\frac{d^n}{dx^n}e^x=e^x$$
+At $x=0$, $e^x=1$.Therefore
+\begin{align*}
+\sum_{n=0}^\infty \frac{f^{(n)}(0)(x)^n}{n!}=1+x+\frac{x^2}{2!}+\frac{x^3}{3!}+\cdots
+=\sum_{n=0}^\infty \frac{(x)^n}{n!}
+\end{align*}
+\end{Example}
+
+\section{Some special series}
+\subsection{Trigonometric Functions}
+
+\begin{align*}
+    \sin{x} &=\sum_{n=0}^\infty \frac{(-1)^{n}x^{2n+1}}{(2n+1)!},\tag{for all $x$}\\
+    \cos{x}&=\sum_{n=0}^\infty \frac{(-1)^{n}x^{2n}}{(2n)!}, \tag{for all $x$}\\
+    \tan{x}&=\sum_{n=1}^\infty \frac{B_{2n}(-4)^n(1-4^n)x^{2n-1}}{(2n)!}, \tag{for $|x|<\frac{\pi}{2}$}
+\end{align*}
+
+\subsection{Inverse Trigonometric Functions}
+
+\begin{align*}
+    \sin^{-1}{x}&=\sum_{n=0}^\infty \frac{(2n)!x^{2n+1}}{4^n(2n+1)(n!)^2}, \tag{for $|x|<1$}\\
+    \cos^{-1}{x}&=\frac{\pi}{2}-\sum_{n=0}^\infty \frac{(2n)!x^{2n+1}}{4^n(2n+1)(n!)^2}, \tag{for all $x$}\\
+    \tan^{-1}{x}&=\sum_{n=0}^\infty \frac{(-1)^{n+1}x^{2n+1}}{2n+1}, \tag{for $|x|<1$}
+\end{align*}
+
+\subsection{Logarithmic Functions}
+
+\begin{align*}
+    \ln{(1+x)}&=\sum_{n=0}^\infty \frac{(-1)^{n+1}x^{n}}{(n)},\tag{for $|x|<1$}\\
+    \frac{1}{(1-x)}&=\sum_{n=0}^\infty x^{n}, \tag{for $|x|<1$}
+\end{align*}
+\begin{align}\label{primedivpower}
+\ln{\biggl(\frac{1}{1-x}\biggl)}=\sum_{n=1}^{\infty}\frac{x^n}{n}
+\end{align}
+\chapter{Bernoulli Numbers}
+\renewcommand\chapterillustration{Bernoulli}
+
+\begin{Definition}{Bernoulli}{}\label{defb}
+Setting $B_0=1$ Bernoulli numbers\footnote{By convention if $B_1=\frac{-1}{2}$, the given Bernoulli sequence is called \textbf{first Bernoulli numbers} and \textbf{second Bernoulli numbers} if $B_1=\frac{1}{2}$.} are defined
+\[
+\sum_{j=0}^m\binom{m+1}{j}B_j=0
+\]
+\end{Definition}
+
+One can also define the Bernoulli numbers\footnote{Discovered by Jacob Bernoulli($1654-1705$) and discussed by him in a posthumous work \textit{Ars Conjectandi}(1713).} using Pascal's triangle
+
+\begin{Definition}{}{}\label{defb2}
+Bernoulli numbers can be defined using the recurrence relation
+\begin{align*}
+B_0&=1\\
+B_2+2B_1+1&=B_2\\
+B_3+3B_2+  3B_1+1&=B_3\\
+B_4  +4B_3+6B_2+  4B_1+1&=B_4\\
+%B_5+5B_4  +10B_3+10B_2+ 5B_1+1&=B_5\\
+%B_6+ 6B_5+ 15B_4+ 20B_3+ 15B_2+ 6B_1+1&=B_6\\
+%B_7+7B_6+21B_5+35B_4+35B_3+21B_2+7B_1+ 1&=B_7\\
+&\vdots
+\end{align*}
+\end{Definition}
+
+\begin{Definition}{Pascal}{}
+Pascal's triangle is a  triangular array of the  binomial coefficients.
+%\footnote{It is named after the French mathematician Blaise Pascal.}
+\end{Definition}
+\noindent Pascal's triangle determines the coefficients which arise in  binomial expansions. For an example, consider the expansion
+$$
+(x+y)^7 = x^7+7x^6y+21x^5y^2+35x^4y^3+35x^3y^4+21x^2y^5+7xy^6+y^7
+$$
+Notice the coefficients are the numbers in row two of Pascal's triangle: 1, 7, 21, 35, 35, 21, 7, 1. In general, when a binomial like $x+y$ is raised to a positive integer power we have:
+\begin{equation}
+(x+y)^n=a_0 x^n+a_1 x^{n-1} y+a_2 x^{n-2} y^2+...+a_{n-1}xy^{n-1}+a_ny^n
+\end{equation}
+where the coefficients $a_i$ in this expansion are precisely the numbers on row n of Pascal's triangle.
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[width=0.8\textwidth]{Pascal}
+\caption{Pascal Tree}
+\end{figure}
+
+\subsection{Pascal Identity}
+
+\begin{align}\label{pascali}
+\binom{n}{k}+\binom{n}{k-1}=\binom{n+1}{k}
+\end{align}
+
+\begin{proof}
+\begin{align*}
+\binom{n}{k}+\binom{n}{k-1}&=\frac{n!}{(n-k)!k!}+\frac{n!}{(n-(k-1))(n-(k-1))!(k-1)k!}\\
+                           &=\frac{(n-(k-1))(k-1)n!+n!}{(n-(k-1) )(n-(k-1) )!(k-1)k!}\\
+                           &=\frac{((n-(k-1))(k-1)+1)n!}{(n-(k-1) )(n-(k-1))!(k-1)k!}
+                            =\frac{(n+1)!}{(n+1-k)!(k!)}
+                            =\binom{n+1}{k}
+\end{align*}
+\end{proof}
+
+\section{How to Compute $B_n$'s}
+
+\begin{flushleft}
+Using definition (\ref{defb2}) it is easy to compute that
+\end{flushleft}
+\begin{align}
+B_0=1,\quad B_1=\frac{-1}{2},\quad B_2=\frac {1}{6},\quad B_3 = 0,\quad B_4 =\frac{-1}{30},\quad B_5 = 0,\quad B_6 =\frac{1}{42},\cdots
+\end{align}
+
+\section{Some Facts}
+
+\begin{Lemma}{Binomial Convolution}{}\label{lembc}
+Let $f(z)=\sum_{n\ge0}\frac{a_n}{n!}z^n, g(z)=\sum_{n\ge0}\frac{b_n}{n!}z^n$ and $h(z)=f(z)*g(z)$.
+Then there exists $d_n$ such that
+\begin{align}
+h(z)=\sum_{n\ge0}\frac{d_n}{n!}z^n,\qquad \text{ with } d_n=\sum_{k=0}^{n}\binom{n}{k}a_{k}b_{n-k}
+\end{align}
+\end{Lemma}
+
+\begin{proof}
+Multiplying $f(z)$ and $g(z)$ gives us
+\begin{align*}
+\biggl(\frac{a_0}{0!}z^0+\frac{a_1}{1!}z^1+\frac{a_2}{2!}z^2+\cdots\biggl)\biggl(\frac{b_0}{0!}z^0+\frac{b_1}{1!}z^1+\frac{b_2}{2!}z^2+\cdots\biggl)
+\end{align*}
+After expanding and regrouping we would get
+\begin{align}\label{two}
+\frac{a_0b_0}{0!0!}z^0+\biggl(\frac{a_0b_1}{0!1!}+\frac{a_1b_0}{1!0!}\biggl)z^1+\biggl(\frac{a_0b_2}{0!2!}+\cdots+\frac{a_2b_0}{2!0!}\biggl)z^2+\cdots
+\end{align}
+If we let $c_n$ to be the coefficient of $z^n$. For example $c_0=\frac{a_0b_0}{0!0!}$. Then we have the following formula
+\begin{align}\label{three}
+c_n=\sum_{k=0}^{n}\frac{a_kb_{n-k}}{k!(n-k)!}
+\end{align}
+Using (\ref{two}) and (\ref{three}) we write $h(z)$ as the following sum
+\begin{align}\label{five}
+h(z)=\sum_{n\ge0}c_nz^n
+\end{align}
+Now let's define a value $d_n$ such that
+\begin{align*}
+d_n&=n!c_n=n!\sum_{k=0}^{n}\frac{a_kb_{n-k}}{k!(n-k)!}\\
+&=\sum_{k=0}^{n}\frac{n!a_kb_{n-k}}{k!(n-k)!}\\
+&=\sum_{k=0}^{n}\binom{n}{k}a_kb_{n-k}
+\end{align*}
+This gives us that
+\begin{align}\label{six}
+\frac{d_n}{n!}=c_n
+\end{align}
+Substituting (\ref{six}) on (\ref{five}) completes the proof.
+\begin{align*}
+h(z)=\sum_{n\ge0}\frac{d_n}{n!}z^n,\qquad \text{ with } d_n=\sum_{k=0}^{n}\binom{n}{k}a_{k}b_{n-k}
+\end{align*}
+\end{proof}
+
+\section{Generating function}
+
+\begin{Theorem}{Generating function for Bernoulli Numbers}{}\label{thmg}
+The generating function for Bernoulli numbers is
+\begin{align*}
+G(z)=\frac{z}{e^z-1}
+\end{align*}
+\end{Theorem}
+
+\begin{proof}
+Let
+\begin{align}
+G(z)=\sum_{n\ge0}\frac{B_n}{n!}z^n,\qquad \text{ where } B_n \text{ stands for }n^{th} \text{ Bernoulli number.}
+\end{align}
+Multiply both sides by $e^z$
+
+\begin{align}
+e^zG(z)&=\sum_{n\ge0}\frac{z^n}{n!}\cdot\sum_{n\ge0}\frac{B_n}{n!}z^n\\
+&=\sum_{n\ge0}\biggl( \sum_{k=0}^{n}\binom{n}{k}B_k\biggl)\frac{z^n}{n!}\qquad \text{ by lemma } (\ref{lembc}).\label{res}
+\end{align}
+Now, by our definition of the Bernoulli number in (\ref{defb})
+
+\begin{align*}
+\sum_{j=0}^m\binom{m+1}{j}B_j=0\qquad \text{ with } B_0=1.
+\end{align*}
+If we set $n=m+1$ and add $B_n$ to both sides, then we have
+\begin{align}
+\sum_{j=0}^{n-1}\binom{n}{j}B_j+B_n=\sum_{j=0}^{n}\binom{n}{j}B_j=0+B_n=B_n
+\end{align}
+or $B_n+1$ in the case where $n=m+1=1$.\\
+This enables us to simplify the result in (\ref{res}) to get
+\begin{align}
+e^zG(z)=z+\sum_{n\ge0}B_n\frac{z^n}{n!}=z+G(z)
+\end{align}
+N.B. The $z$ at the bottom comes from the fact that at $n=1$, our result is
+$$(B_1+1)\frac{z^1}{1!}=\frac{B_1}{1!}z^1+z$$
+If we subtract $G(z)$ from both sides, we get
+\begin{align*}
+e^zG(z)-G(z)=z\\
+G(z)(e^z-1)=z
+\end{align*}
+Dividing both sides by $e^z-1$ gives us
+\begin{align}
+G(z)=\frac{z}{e^z-1}
+\end{align}
+\end{proof}
+
+\section{Why the  odds vanish?}
+
+\begin{Corollary}{}{}
+$B_{2i+1}=0$ if $i\ge1$.
+\end{Corollary}
+
+\begin{proof}
+From theorem (\ref{thmg}) we have
+\begin{align*}
+\frac{z}{e^z-1}=\sum_{n\ge0}B_n\frac{z^n}{n!}
+\end{align*}
+Then using the fact that $B_1=-1/2$, we have the following
+\begin{align}\label{iden}
+\sum_{\substack{n\ge1\\{n\neq 1}}}B_n\frac{z^n}{n!}=\frac{z}{e^z-1}-\frac{z}{2}
+\end{align}
+Now, look closely at the following algebraic simplification
+\begin{align*}
+\frac{z}{e^z-1}-\frac{z}{2}&=\frac{2z+z(e^z-1)}{2(e^z-1)}\\
+&=\biggl(\frac{z}{2}\biggl)\frac{(e^z+1)}{(e^z-1)}\\
+&=\biggl(\frac{z}{2}\biggl)\frac{(e^z+1)}{(e^z-1)}*\biggl(\frac{e^{-z/2}}{e^{-z/2}}\biggl)\\
+&=\biggl(\frac{z}{2}\biggl)\biggl(\frac{e^{z/2}+e^{-z/2}}{e^{z/2}-e^{-z/2}}\biggl)
+\end{align*}
+If we replace $z$ by $-z$ in our final result, the identity remain unchanged($\frac{z}{e^z-1}-\frac{z}{2}$ is even function).
+\begin{align*}
+\biggl(\frac{-z}{2}\biggl)\biggl(\frac{e^{-z/2}+e^{-(-z/2)}}{e^{-z/2}-e^{-(-z/2)}}\biggl)=\biggl(\frac{-z}{2}\biggl)
+\biggl(\frac{e^{-z/2}+e^{z/2}}{e^{-z/2}-e^{z/2}}\biggl)=\biggl(\frac{z}{2}\biggl)\biggl(\frac{e^{z/2}+e^{-z/2}}{e^{z/2}
+-e^{-z/2}}\biggl)
+\end{align*}
+But this means that the same must hold true for $ \sum_{\substack{n\ge1\\{n\neq 1}}}B_n\frac{z^n}{n!}$. Since in (\ref{iden}), we showed that they are equal functions. So that we have
+
+\begin{align*}
+\sum_{\substack{n\ge1\\{n\neq 1}}}B_n\frac{z^n}{n!}=\sum_{\substack{n\ge1\\{n\neq 1}}}B_n\frac{(-z)^n}{n!}=\sum_{\substack{n\ge1\\{n\neq 1}}}(-1)^nB_n\frac{z^n}{n!}
+\end{align*}
+Matching up each of the terms according to powers of $z^n$, this gives us
+\begin{align}
+B_n=(-1)^nB_n
+\end{align}
+Thus, $B_n=0$, whenever $n$ is odd. Since we have excluded the case $n=1$, we conclude that
+\begin{align*}
+B_{2i+1}=0 \text{ if } i\ge1.
+\end{align*}
+\end{proof}
+
+\section{Simple but Elegant Application}
+
+\subsection{Faulhaber's Formula}
+
+\begin{align}
+\sum_{k=0}^{m-1}k^n=\frac{1}{n+1}\sum_{k=0}^{n}\binom{n+1}{k}B_k m^{n+1-k}
+\end{align}
+
+\chapter{Zeta function}
+
+\renewcommand\chapterillustration{Riemann}
+
+\section{Introduction}
+
+\begin{Definition}{(Zeta Function)}{}
+The Riemann zeta function $\zeta(s)$ is defined for $\Re(s)>1$ by
+\[
+\zeta (s)=\sum_{n=1}^\infty \frac {1}{n^s}
+\]
+\end{Definition}
+\noindent Note that the series converges absolutely in the given region: for
+%\footnote{Euler consider $s \in \mathbb{Z} $ and Riemann extend it to $s\in \mathbb{C}.$}
+$s = x + iy$ with $x > 1$, we have
+\[\sum_{n=1}^{\infty}\biggl|\frac{1}{n^z}\biggl|=\sum_{n=1}^{\infty}\biggl|\frac{1}{n^xn^{iy}}\biggl|
+=\sum_{n=1}^{\infty}\biggl|\frac{e^{-iy\log(n)}}{n^x}\biggl|=\sum_{n=1}^{\infty}\frac{1}{n^x}\leq \int_{1}^{\infty}\frac{1}{t^x}dt=\biggl[\frac{t^{1-x}}{1-x}\biggl]_{1}^{\infty}=\frac{1}{1-x}
+\]
+Thus $\zeta(s)$ is indeed defined for $\Re(s)>1$.
+\section{Basic Results}
+
+\begin{Lemma}{}{}\label{primediv0}
+The power series(\ref{primedivpower}) of $f(x)$ which is
+\[
+f(x)=\ln{\biggl(\frac{1}{1-x}\biggl)}
+\]
+is given by
+\[
+\sum_{n=1}^{\infty}\frac{x^n}{n}
+\]
+\end{Lemma}
+
+\begin{proof}
+$f(x)=\ln{\biggl(\frac{1}{1-x}\biggl)}$, the Maclaurine series of $f(x)$ is by definition(\ref{maclaurine})
+\[
+f(x)=\sum_{n=0}^{\infty}\frac{f^{(n)}(0)x^n}{n!}
+\]
+Now,
+\begin{align*}
+f^{(1)}(x)&=\frac{1}{1-x}           &\Rightarrow f^{(1)}(0)&=1\\
+f^{(2)}(x)&=\frac{1}{(1-x)^2}       &\Rightarrow f^{(2)}(0)&=1\\
+f^{(3)}(x)&=\frac{2}{(1-x)^3}       &\Rightarrow f^{(3)}(0)&=2\\
+f^{(4)}(x)&=\frac{2\cdot3}{(1-x)^4} &\Rightarrow f^{(4)}(0)&=2\cdot3\\
+          &\vdots                   &                      &\vdots\\
+f^{(n)}(x)&=\frac{(n-1)!}{(1-x)^n}  &\Rightarrow f^{(n)}(0)&=(n-1)!\\
+\end{align*}
+Hence,
+\begin{align*}
+f(x)=\sum_{n=0}^{\infty}\frac{f^{(n)}(0)x^n}{n!}=\sum_{n=0}^{\infty}\frac{(n-1)!x^n}{n!}=\sum_{n=0}^{\infty}\frac{x^n}{n}
+\end{align*}
+\end{proof}
+\section{Euler Product Formula}
+\begin{Theorem}{(Euler Product)}{}
+The Riemann zeta function can be represent as a product
+\[
+\zeta (s)=\sum_{n=1}^\infty \frac {1}{n^s}=\prod_{p\in \Bbb P}\frac{1}{(1-\frac{1}{p^s})}
+\]
+where $\Bbb P$ is the set of prime numbers.
+\end{Theorem}
+\begin{proof}
+Start with
+\begin{equation}\label{ep1}
+\zeta (s)=\sum_{n=1}^\infty \frac {1}{n^s}
+\end{equation}
+Multiply it by $\frac{1}{2^s}$
+\begin{equation}\label{ep2}
+\frac{1}{2^s}\zeta (s)=\frac{1}{2^s}\sum_{n=1}^\infty \frac {1}{n^s}=\sum_{n=1}^\infty \frac {1}{(2n)^s}
+\end{equation}
+Now subtract (\ref{ep2}) from (\ref{ep1})
+\begin{align*}
+\zeta (s)-\frac{1}{2^s}\zeta (s)=\sum_{n=1}^\infty \frac {1}{n^s}-\sum_{n=1}^\infty \frac {1}{(2n)^s}
+\end{align*}
+\begin{equation}\label{ep3}
+(1-\frac{1}{2^s})\zeta (s)=\sum_{\substack{n=1\\{n\neq 2k}}}^\infty \frac {1}{n^s},\qquad k\in\mathbb{N}
+\end{equation}
+Multiply the last equation by $\frac{1}{3^s}$
+\begin{equation}\label{ep4}
+\frac{1}{3^s}(1-\frac{1}{2^s})\zeta (s)=\frac{1}{3^s}\sum_{\substack{n=1\\{n\neq 2k}}}^\infty \frac {1}{n^s}=
+\sum_{\substack{n=0\\{n\neq 2k}}}^\infty \frac {1}{(3n)^s}
+\end{equation}
+Again subtract (\ref{ep4}) from (\ref{ep3}) to get
+\begin{align*}
+(1-\frac{1}{2^s})({1-\frac{1}{3^s}})\zeta (s)&=\sum_{\substack{n=1\\{n\neq 2k}}}^\infty \frac {1}{n^s}-
+\sum_{\substack{n=0\\{n\neq 2k}}}^\infty \frac {1}{(3n)^s}\\
+(1-\frac{1}{2^s})({1-\frac{1}{3^s}})\zeta (s)&=\sum_{\substack{n=1\\{n\neq 2k}\\{n\neq 3k}}}^\infty \frac {1}{n^s}
+\end{align*}
+If we repeat this  pattern over again and again we will arrive at
+\[
+((1-\frac{1}{2^s})({1-\frac{1}{3^s}})\cdots)\zeta (s)
+=\sum_{\substack{n=1\\{n\neq 2k}\\{n\neq 3k}\\{\vdots}}}^\infty \frac {1}{n^s}
+\]
+Since we have taken out all the multiple of primes on the right side Fundamental Theorem of Arithmetic tells us that we had left with $1$.
+\begin{align*}
+((1-\frac{1}{2^s})({1-\frac{1}{3^s}})\cdots)\zeta (s)&=1\\
+\zeta (s)&=\frac{1}{((1-\frac{1}{2^s})({1-\frac{1}{3^s}})\cdots)}
+\end{align*}
+Which is nothing but
+\[
+\zeta (s)=\prod_{p\in\Bbb P} \frac{1}{(1-\frac{1}{p^s})}
+\]
+\end{proof}
+
+\begin{Corollary}{Euler}{}
+There are infinitely many primes.
+\end{Corollary}
+
+\begin{proof}
+If there were a finite number of primes, harmonic series would converge.
+\end{proof}
+
+\begin{Theorem}{}{}
+The sum of reciprocal of primes
+\[
+\sum_{p\in\Bbb P} 1/p\to \infty
+\]
+diverges(converges to $\infty$).
+\end{Theorem}
+
+\begin{proof}
+Because of the fact that $\lim_{s\rightarrow 1^+}\zeta(s)=\infty$, it follows that
+\begin{align}\label{primediv1}
+\lim_{s\rightarrow 1^+}\ln(\zeta(s))=\infty
+\end{align}
+But,
+\begin{align*}
+\ln(\zeta(s))&=\ln\biggl(\sum_{n=1}^{\infty}\frac{1}{n^s}\biggl)\\
+             &=\ln\biggl(\prod_{p}\frac{1}{1-1/p^s}\biggl)=\sum_{p}\ln\biggl(\frac{1}{1-1/p^s}\biggl)\\
+             &=\sum_{p}\sum_{n=1}^{\infty}\frac{1}{np^{sn}}\tag{lemma (\ref{primediv0})}\\
+             &=\sum_{p}\biggl(\frac{1}{p^s}+\sum_{n=2}^{\infty}\frac{1}{np^{sn}}\biggl)
+\end{align*}
+Hence,
+\[
+\ln(\zeta(s))=\sum_{p}\frac{1}{p^s}+\sum_{p}\sum_{n=2}^{\infty}\frac{1}{np^{sn}}
+\]
+Thus,
+\[
+\ln(\zeta(s))<\sum_{p}\frac{1}{p^s}+\sum_{p}\sum_{n=2}^{\infty}\frac{1}{p^{sn}}
+\]
+From geometric sum, we have
+\[
+\sum_{n=2}^{\infty}\frac{1}{p^{sn}}=\frac{1}{p^{2s}-p^s}
+\]
+Therefore, for $s>1$, we obtain that
+\begin{align*}
+\ln(\zeta(s))&<\sum_{p}\frac{1}{p^s}+\sum_{p}\frac{1}{p^{2s}-p^s}\\
+             &=\sum_{p}\frac{1}{p^s}+\sum_{p}\frac{1}{p^{s}(p^s-1)}\\
+             &<\sum_{p}\frac{1}{p^s}+\sum_{n=2}^{\infty}\frac{1}{n^{s}(n^s-1)}\\
+             &<\sum_{p}\frac{1}{p^s}+\sum_{n=2}^{\infty}\frac{1}{n(n-1)}\\
+             &<\sum_{p}\frac{1}{p^s}+\sum_{n=2}^{\infty}\frac{1}{(n-1)^2}
+\end{align*}
+
+\noindent Thus, it yields
+\[
+\lim_{s\rightarrow 1^+}\ln(\zeta(s))\leq \lim_{s\rightarrow 1^+}\biggl(\sum_{p}\frac{1}{p^s} +\sum_{n=2}^{\infty}\frac{1}{(n-1)^2}\biggl)
+\]
+and thus, by (\ref{primediv1}), it is evident that
+\[
+\lim_{s\rightarrow 1^+}\biggl(\sum_{p}\frac{1}{p^s} +\sum_{n=2}^{\infty}\frac{1}{(n-1)^2}\biggl)=\infty
+\]
+However, the series
+\[
+\sum_{n=2}^{\infty}\frac{1}{(n-1)^2}
+\]
+converges to a real number. Hence,
+$$
+\lim_{s\rightarrow 1^+}\sum_{p}\frac{1}{p^s}=\infty
+$$
+Therefore,
+$$ \sum_{p}\frac{1}{p}=\infty $$
+\end{proof}
+
+\chapter{Extras}
+
+\renewcommand\chapterillustration{Karl}
+\section{Elegant Identities}
+
+% Define box and box title style
+\tikzstyle{mybox} = [draw=red, fill=blue!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=red, text=white]
+
+\begin{tikzpicture}
+\node [mybox] (box){%
+\begin{minipage}{0.45\textwidth}
+\begin{align}\label{comp1}
+i^i=\frac{1}{e^{\frac{\pi}{2}}}
+\end{align}
+\textbf{Proof}:
+From Euler's formula
+\[ e^{i\phi}=\cos{\phi}+i\cdot \sin{\phi} \]
+when  $\phi=\frac{\pi}{2}$
+
+\[
+e^{\frac{i\pi}{2}}=\cos{\frac{\pi}{2}+i\cdot \sin{\frac{\pi}{2}}}=0+i\cdot1=i
+\]
+Hence
+\[
+i^i=(e^{\frac{i\pi}{2}})^i
+=e^{i^2\cdot\frac{\pi}{2}}=e^{-\frac{\pi}{2}}
+=\frac{1}{e^{\frac{\pi}{2}}}
+\]
+    \end{minipage}
+};
+\node[fancytitle, right=10pt] at (box.north west) {\textbf{Complex raise complex}};
+\node[fancytitle, rounded corners] at (box.east) {$\clubsuit$};
+\end{tikzpicture}%
+%
+\tikzstyle{mybox} = [draw=blue, fill=green!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=blue, text=white, ellipse]
+%
+\begin{tikzpicture}[transform shape, rotate=10, baseline=-3.5cm]
+\node [mybox] (box) {%
+    \begin{minipage}[t!]{0.45\textwidth}
+       \begin{align}\label{comp2}
+\sqrt[i]{i}	= e^{\frac{\pi}{2}}
+\end{align}
+\textbf{Proof}:
+The proof is similar to (\ref{comp1})
+$$ e^{\frac{i\pi}{2}}=i $$  from (\ref{comp1})
+$$\Rightarrow i^{\frac{1}{i}}=(e^{\frac{i\pi}{2}})^{\frac{1}{i}}$$
+$$\Rightarrow\sqrt[i]{i}=e^{\frac{\pi}{2}}$$
+
+    \end{minipage}
+    };
+\node[fancytitle] at (box.north) {\textbf{Complex root of complex}};
+\end{tikzpicture}
+
+\begin{Remark}{}{}
+Exponentiation of a complex number is multi-valued. So the results in (\ref{comp1}) and (\ref{comp2}) are NOT the only ones.
+\end{Remark}
+
+\begin{proof}[\textbf{Formal Proof}]
+We have $\log z=\ln r + i\theta$, where $r$ is a modulus of $z$ and $\theta$ is the argument of $z$. From polar representation of complex number;  $z=r(\cos\theta +i\sin\theta)$ and from Euler's formula
+\[e^{i\theta}=\cos\theta+i \sin \theta\]
+It follows that
+\[z=re^{i\theta}\]
+Hence,
+\[\log z=\ln(re^{i\theta})=\ln r+\ln(e^{i\theta})=\ln r+i(\theta +2k\pi),\ k\in\Bbb Z.\]
+Now
+\[i^i=e^{\log i^i}=e^{i\log i}\]
+and
+\[\log i=\ln 1+i\biggl(\frac{\pi}{2}+2k\pi\biggl)=0+i\biggl(\frac{\pi}{2}+2k\pi\biggl),\ k\in \Bbb Z.\]
+Thus
+\[i^i=e^{i^2\bigl(\frac{\pi}{2}+2k\pi\bigl)}=e^{-\frac{\pi}{2}-2k\pi},\ k\in\Bbb Z.\]
+\end{proof}
+
+% Define box and box title style
+\tikzstyle{mybox} = [draw=red, fill=blue!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=DarkGreen, text=white]
+
+\begin{tikzpicture}
+\node [mybox] (box){%
+\begin{minipage}{0.4\textwidth}
+\[e^{i\pi}=-1\]
+\textbf{Proof}:
+Recall Euler's formula
+\[
+e^{i\phi}=\cos{\phi}+i\cdot \sin{\phi}
+\]
+Letting $\phi=\pi$, we get
+\[e^{i\pi}=-1+i\cdot 0=-1\]
+\end{minipage}
+};
+\node[fancytitle, right=10pt] at (box.north west) {\textbf{Euler's Identity}};
+\node[fancytitle, rounded corners] at (box.east) {$\clubsuit$};
+\end{tikzpicture}%
+%
+\tikzstyle{mybox} = [draw=blue, fill=green!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=blue, text=white, ellipse]
+%
+\begin{tikzpicture}[transform shape, rotate=10, baseline=-3.5cm]
+\node [mybox] (box) {%
+\begin{minipage}[t!]{0.43\textwidth}
+Hardy thought it was a dull one but Ramanujan\footnote{"No," Ramanujan replied, "it is a very interesting number; it is the smallest number expressible as the sum of two cubes in two different ways."} did not.
+\[\textbf{1729}\]
+\begin{align*}
+12^3+1^3=1729\\
+9^3+10^3=1729
+\end{align*}
+\end{minipage}
+    };
+\node[fancytitle] at (box.north) {\textbf{Hardy-Ramanujan number}};
+\end{tikzpicture}
+
+\medskip
+
+% Define box and box title style
+\tikzstyle{mybox} = [draw=red, fill=blue!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=DarkRed, text=white]
+
+\begin{tikzpicture}
+\node [mybox] (box){%
+\begin{minipage}{0.95\textwidth}
+\begin{align}\label{telscop1}
+\frac{1}{1\cdot2}+\frac{1}{2\cdot3}+\frac{1}{3\cdot4}+\cdots+\frac{1}{n\cdot(n+1)}+\cdots=1
+\end{align}
+\textbf{Proof}:
+The series in (\ref{telscop1}) can be rewritten as
+\begin{align*}
+\sum_{n=1}^{\infty}\frac{1}{n\cdot(n+1)} &=\sum_{n=1}^{\infty}\biggl(\frac{1}{n}-\frac{1}{n+1}\biggl)\\
+&=\lim_{n\to\infty}\biggl(1-\frac{1}{2}\biggl)+\biggl(\frac{1}{2}-\frac{1}{3}\biggl)+\cdots+\biggl(\frac{1}{n-1}-\frac{1}{n}\biggl)+\biggl(\frac{1}{n}-\frac{1}{n+1}\biggl)\\
+&=\lim_{n\to\infty}\biggl(1-\frac{1}{n+1}\biggl)
+=1
+\end{align*}
+\end{minipage}
+};
+\node[fancytitle, right=10pt] at (box.north west) {\textbf{Telescoping to One}};
+\node[fancytitle, rounded corners] at (box.east) {$\clubsuit$};
+\end{tikzpicture}%
+%
+\newpage
+% Define box and box title style
+\tikzstyle{mybox} = [draw=red, fill=blue!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=DarkGreen, text=white]
+
+\begin{tikzpicture}
+\node [mybox] (box){%
+\begin{minipage}{0.95\textwidth}
+\begin{align}\label{Leibniz1}
+1+\frac{1}{3}+\frac{1}{6}+\frac{1}{10}+\frac{1}{15}+\frac{1}{21}+\frac{1}{28}+\frac{1}{36}+\frac{1}{45}+\cdots=2
+\end{align}
+\textbf{Proof 1}: Here is how Leibniz\footnote{Gottfried Wilhelm Leibniz($1646-1716$) was a German  mathematician and philosopher.} did it,
+\begin{align*}
+1+\frac{1}{3}+\frac{1}{6}+\frac{1}{10}+\frac{1}{15}+\frac{1}{21}+\frac{1}{28}+\cdots &=2\biggl[\frac{1}{2}+\frac{1}{6}+\frac{1}{12}+\frac{1}{20}+\frac{1}{30}+\frac{1}{42}+\frac{1}{56}+\cdots\biggl]
+\\
+&=2\biggl[\biggl(1-\frac{1}{2}\biggl)+\biggl(\frac{1}{2}-\frac{1}{3}\biggl)+\biggl(\frac{1}{3}-\frac{1}{4}\biggl)+\biggl(\frac{1}{4}-\frac{1}{5}\biggl)+\cdots\biggl]
+\end{align*}
+Everything inside the brace becomes $1$(the fractions cancel out). Hence $2\cdot 1=2$.
+\medskip
+
+\textbf{Proof 2}: If you see closely each of the denominator in (\ref{Leibniz1}) are triangular numbers, so using sigma notation the series can be written as
+
+\[
+\sum_{n=1}^\infty \frac{1}{\frac{n(n+1)}{2}}=\sum_{n=1}^\infty \frac{2}{n(n+1)}
+\]
+But this is Telescoping series in the form
+\begin{align*}
+\sum_{n=1}^\infty \frac{2}{n(n+1)}&=\sum_{n=1}^\infty \biggl(\frac{2}{n} - \frac{2}{n+1}\biggl)
+=\lim_{n\rightarrow \infty } \biggl[(2-1)+\biggl(1-\frac{2}{3}\biggl)+\cdots
++\biggl(\frac{2}{n-1}-\frac{2}{n}\biggl)+\biggl(\frac{2}{n}-\frac{2}{n+1}\biggl)\biggl]\\
+&=\lim_{n\rightarrow \infty } \biggl(2-\frac{2}{n+1}\biggl)
+=2
+\end{align*}
+\end{minipage}
+};
+\node[fancytitle, right=10pt] at (box.north west) {\textbf{Leibniz Sum}};
+\node[fancytitle, rounded corners] at (box.east) {$\clubsuit$};
+\end{tikzpicture}%
+%
+\tikzstyle{mybox} = [draw=blue, fill=green!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=blue, text=white, ellipse]
+%
+\begin{tikzpicture}[transform shape, rotate=0, baseline=-3.5cm]
+\node [mybox] (box) {%
+\begin{minipage}[t!]{0.98\textwidth}
+\[\sqrt{1+2\sqrt{1+3 \sqrt{1+ 4\sqrt{1+\cdots}}}}=3\]
+\textbf{Proof}\footnote{Srinivasa Ramanujan($1887-1920$) was an Indian  mathematician}:
+Consider
+\begin{align*}
+(x+n+a)^2 = (x + (n+a))^2
+          = x^2+2x(n+a) +(n+a)^2
+          = ax+(n+a)^2+x(x+2n+a)
+\end{align*}
+This implies
+\begin{align}\label{ramnest1}
+x+n+a=\sqrt{ax+(n+a)^2+x\underbrace{(x+2n+a)}}
+\end{align}
+Now, substituting $x+n$ in place of $x$ in (\ref{ramnest1})
+\begin{align*}
+x+2n+a =(x+n)+(n+a)
+       =\sqrt{a(x+n)+(n+a)^2+(x+n)(x+3n+a)}
+\end{align*}
+Then keep replacing the last term by writing $(x+\beta n+a)$ in the form of $((x+(\beta-1)n)+n+a)$ to give
+\[
+x+n+a= \sqrt{ax + (n+a)^2 +x\sqrt{a(x+n)+(n+a)^2 +(x+n)\sqrt{...}}}
+\]
+Now setting $x=2$, $n=1$ and $a=0$, gives the desired result.
+\end{minipage}
+    };
+\node[fancytitle] at (box.north) {\textbf{Ramanujan nested sum}};
+\end{tikzpicture}
+\newpage
+% Define box and box title style
+\tikzstyle{mybox} = [draw=red, fill=green!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=DarkBlue, text=white]
+
+\begin{tikzpicture}
+\node [mybox] (box){%
+\begin{minipage}{0.45\textwidth}
+\begin{align*}
+\sum_{n=1}^\infty \frac{n}{2^n}=2
+\end{align*}
+\textbf{Proof}:\footnote{Ponnusamy S. and Silverman H., Complex variables}
+Consider the function
+\begin{align*}
+f(z)=\frac{1}{1-z}
+\end{align*}
+The power series expansion of $f(z)$ is
+\begin{align*}
+f(z)=\sum_{n=1}^{\infty}z^n
+\end{align*}
+Now take the derivative of $f$, which is
+\begin{align*}
+f'(z)=\frac{1}{(1-z)^2}=\sum_{n=1}^{\infty}nz^{n-1}
+\end{align*}
+Multiplying by $z$
+\begin{align}\label{ors1}
+zf'(z)=\frac{z}{(1-z)^2}=\sum_{n=1}^{\infty}nz^{n}
+\end{align}
+Substituting $z=1/2$ in (\ref{ors1})
+\begin{align*}
+\sum_{n=1}^\infty \frac{n}{2^n}=\frac{\frac{1}{2}}{\biggl(1-\frac{1}{2}\biggl)^2}=2
+\end{align*}
+\end{minipage}
+};
+\node[fancytitle, right=10pt] at (box.north west) {\textbf{Oresme Sum}};
+\node[fancytitle, rounded corners] at (box.east) {$\clubsuit$};
+\end{tikzpicture}
+%
+\tikzstyle{mybox} = [draw=blue, fill=green!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=blue, text=white, ellipse]
+%
+\begin{tikzpicture}[transform shape, rotate=10, baseline=-3.5cm]
+\node [mybox] (box) {%
+\begin{minipage}[t!]{0.37\textwidth}
+For any $\{a,b,c,d\}$,
+\[(a^2+b^2 )(c^2+d^2 )=(ac+bd)^2+(ad-bc)^2\]
+Just expand!
+\end{minipage}
+    };
+\node[fancytitle] at (box.north) {\textbf{Lagrange Identity}};
+\end{tikzpicture}%
+%
+% Define box and box title style
+\tikzstyle{mybox} = [draw=red, fill=green!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=DarkBlue, text=white]
+
+\begin{tikzpicture}
+\node [mybox] (box){%
+\begin{minipage}{0.95\textwidth}
+\begin{align}
+\sum_{n=1}^{\infty}\frac{(-1)^{n+1}}{n}=\ln 2
+\end{align}
+\textbf{Proof}: The proof is the direct result of Maclaurin expansion of $\ln(1+x)$,
+\begin{align}\label{harmonpi1}
+\ln (1+x)=x-\frac{x^2}{2}+\frac{x^3}{3}-\frac{x^4}{4}+\cdots
+\end{align}
+Substitute $x=1$ in (\ref{harmonpi1})
+\[
+\ln 2=1-\frac{1}{2}+\frac{1}{3}-\frac{1}{4}+\cdots
+\]
+\end{minipage}
+};
+\node[fancytitle, right=10pt] at (box.north west) {\textbf{Alternate Harmonic Series}};
+\node[fancytitle, rounded corners] at (box.east) {$\clubsuit$};
+\end{tikzpicture}
+%
+\tikzstyle{mybox} = [draw=blue, fill=green!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=blue, text=white, ellipse]
+%
+%
+\tikzstyle{mybox} = [draw=blue, fill=green!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=blue, text=white, ellipse]
+%
+\begin{tikzpicture}[transform shape, rotate=0, baseline=-3.5cm]
+\node [mybox] (box) {%
+\begin{minipage}[t!]{0.95\textwidth}
+For any $\{x,y\}$,
+\[x^4+4y^4=((x+y)^2+y^2)((x-y)^2+y^2)=(x^2+2xy+2y^2)(x^2-2xy+2y^2)\]
+\end{minipage}
+    };
+\node[fancytitle] at (box.north) {\textbf{Sophie Germain's}};
+\end{tikzpicture}
+
+% Define box and box title style
+\tikzstyle{mybox} = [draw=red, fill=blue!20, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle} =[fill=DarkRed, text=white]
+
+\begin{tikzpicture}[transform shape, rotate=0, baseline=-3.5cm]
+\node [mybox] (box){%
+\begin{minipage}{0.9\textwidth}
+\[
+1-\frac{1}{2}+\frac{1}{3}-\frac{1}{4}+\cdots+\frac{1}{2n-1}-\frac{1}{2n}=\frac{1}{n+1}+\frac{1}{n+2}+\cdots+\frac{1}{2n}
+\]
+
+\textbf{Proof}:
+Let
+\[S_k=1+\frac{1}{2}+\frac{1}{3}+\cdots+\frac{1}{k}\]
+Now
+\begin{align*}
+1-\frac{1}{2}+\frac{1}{3}-\frac{1}{4}+\cdots+\frac{1}{2n-1}- \frac{1}{2n} &=S_{2n}-2\biggl(\frac{1}{2}+\frac{1}{4}+\cdots+\frac{1}{2n}\biggl)\\
+&=S_{2n}-S_n\\
+&=\frac{1}{n+1}+\frac{1}{n+2}+\cdots+\frac{1}{2n}
+\end{align*}
+\end{minipage}
+};
+\node[fancytitle, right=10pt] at (box.north west) {\textbf{Catalan's Identity}};
+\node[fancytitle, rounded corners] at (box.east) {$\bigstar$};
+\end{tikzpicture}%
+%
+
+
+\section{Leibniz Formula}
+
+\begin{align*}
+\sqrt{6}=\sqrt{1-\sqrt{-3}} +\sqrt{1+\sqrt{-3}}
+\end{align*}
+
+\newpage
+
+\section{Representation for $\pi$}
+
+\subsection{Cardinal Sine Function}
+Consider the cardinal sine function
+\[\frac{\sin x}{x},\qquad \text{ which has a non zero root at }\pm\pi,\pm2\pi,\pm\pi,\ldots\]
+Now, express the cardinal sine function by infinite product polynomials like this
+\begin{align}\label{reppi1}
+\frac{\sin x}{x}
+=\biggl(1-\frac{x}{\pi}\biggl)\biggl(1+\frac{x}{\pi}\biggl)\biggl(1-\frac{x}{2\pi}\biggl)\biggl(1+\frac{x}{2\pi}\biggl)
+\biggl(1-\frac{x}{3\pi}\biggl)\biggl(1+\frac{x}{3\pi}\biggl)\cdots
+\end{align}
+Evaluate (\ref{reppi1}) at $x=\pi/2$
+\[
+\frac{\sin \pi/2}{\pi/2}=\biggl(1-\frac{1}{2}\biggl)\biggl(1+\frac{1}{2}\biggl)\biggl(1-\frac{1}{4}\biggl)
+\biggl(1+\frac{1}{4}\biggl)\biggl(1-\frac{1}{6}\biggl)\biggl(1+\frac{1}{6}\biggl)\cdots
+\]
+After some algebraic simplification we get
+\[
+\frac{2}{\pi}=\frac{1\cdot3\cdot3\cdot5\cdot5\cdot7\cdot7}{2\cdot2\cdot4\cdot4\cdot6\cdot6\cdot8}\cdots
+\]
+
+\subsection{Arctan Function}
+The Taylor expansion of arctan$x$ is
+\begin{align}\label{arctanpi1}
+\tan^{-1}x=x-\frac{x^3}{3}+\frac{x^5}{5}-\frac{x^7}{7}+\cdots
+\end{align}
+Evaluate (\ref{arctanpi1}) at $x=1$ to get
+\[ \frac{\pi}{4}=1-\frac{1}{3}+\frac{1}{5}-\frac{1}{7}+\cdots\]
+
+\subsection{Gaussian Integrals}
+\begin{align}
+\int_{-\infty}^{\infty}e^{-x^2}dx=\sqrt{\pi}
+\end{align}
+
+\begin{proof}
+Let $I=\int_{-\infty}^{\infty}e^{-x^2}dx$. Now,
+\begin{align*}
+I^2&=\int_{-\infty}^{\infty}\underbrace{e^{-x^2}dx\int_{-\infty}^{\infty}e^{-y^2}dy=\int_{-\infty}^{\infty}\int_{-\infty}^{\infty}e^{-(x^2+y^2)}}_{\mbox{Fubini theorem}}dxdy\\
+&=\int_{0}^{\infty}\int_{0}^{\infty}e^{-r^2}rdrd\theta \qquad (\text{Jacobian})\\
+&=\int_{0}^{2\pi}d\theta\int_{0}^{\infty}e^{-r^2}rdr \\
+&=\theta\big|_{0}^{2\pi}\big(-\frac{1}{2}e^{-r^2}\big|_{0}^{\infty}\big)\\
+&=2\pi\biggl(\frac{1}{2}\biggl)\\
+&=\pi\\
+\therefore \int_{-\infty}^{\infty}e^{-x^2}=\sqrt{\pi}
+\end{align*}
+\end{proof}
+
+\newpage
+\section{Mathematical Dreams}
+
+\begin{Theorem}{Freshman's Dream}{}
+%\footnote{Terminology due to V. O. McBrien.}
+Let $R$ be a commutative ring with identity of prime characteristic $p$. If $a,b \in R$ then
+\[(a\pm b)^{p^n} = a^{p^n} \pm b^{p^n}\]
+for all integers $n\geq 0$.
+\end{Theorem}
+
+\begin{proof}
+Since $R$ is commutative with identity we have that
+
+\[(a+b)^{p^n} = \sum_{k=0}^{p^n} \dbinom{p^n}{k} a^{p^n-k}b^k\]
+
+\noindent Then since $p | \dbinom{p^n}{k}$ for all $a\leq k \leq p^{n-1}$ and $R$ has characteristic $p$, we know that
+
+\[\dbinom{p^n}{k}a^{p^n-k}b^k = 0\quad \forall 1 \leq k \leq p^n-1\]
+
+\noindent Therefore
+\[(a+b)^{p^n} = \dbinom{p^n}{0}a^{p^n-0}b^0 + \dbinom{p^n}{p^n}a^{p^n-p^n}b^{p^n}.\]
+
+\noindent Thus $(a+b)^{p^n} = a^{p^n} + b^{p^n}$. Also $(a-b)^{p^n} = a^{p^n} + (-b)^{p^n}$.\\
+\noindent When $p = 2$ we have that $(-b)^{p^n} = b^{p^n},$ otherwise $(-b)^{p^n} =-b^{p^n}$. This completes the proof.
+\end{proof}
+
+\begin{Theorem}{Sophomore's Dream}{}
+\[\int_0^1 x^x dx =\sum_{n=1}^{\infty}(-1)^{n+1}n^{-n} =-\sum_{n=1}^{\infty}(-n)^{-n}
+= 0.783430510712134407059264386526975469407\ldots\]
+\end{Theorem}
+
+\begin{proof}
+Expand $x^x$ as
+
+\[
+x^x = \exp(x\log x)=\sum_{n=0}^{\infty}\frac{x^n (\log x)^n}{n!}
+\]
+
+\noindent Therefore, we have
+\[
+\int_0^1 x^x dx=\int_0^1\sum_{n=0}^{\infty}\frac{x^n(\log x)^n}{n!} dx
+\]
+By uniform convergence of the power series, we may interchange summation and integration
+
+\[
+\int_0^1x^x dx = \sum_{n=0}^{\infty}\int_0^1 \frac{x^n (\log x)^n}{n!} dx
+\]
+
+\noindent To evaluate the above integrals we perform the change of variable in the integral $x = \exp(-\frac{u}{n+1})$, with $0<u <\infty$, giving us
+
+\[\int_0^1 x^n (\log x )^n dx = (-1)^n (n + 1)^{-(n + 1)}\int_0^{\infty} u^n e^{-u} du\]
+By the well-known Euler's integral identity for the Gamma function
+\[
+\int_0^{\infty} u^n e^{-u} du = n!
+\]
+so that
+\[ \int_0^1 \frac{x^n (\log x)^n}{n!} dx=(-1)^n (n+1)^{-(n+1)}\]
+Summing these (and changing indexing so it starts at n = 1 instead of n = 0) yields the formula.
+\end{proof}
+
+\section{Perpendicular lines}
+If $m_1$ and $m_2$ are the slop of two perpendicular lines, then
+
+$$m_1 \cdot m_2=-1$$
+
+\begin{proof}
+By definition Two lines are perpendicular iff the angle between them is $90^{\circ}$
+$$
+\tan 90^{\circ}=\frac{m_1 - m_2}{1+m_1m_2}=\infty
+$$	
+$$
+=\frac{m_1 - m_2}{\infty}=1+m_1m_2
+$$
+$$
+1+m_1m_2=0~~~,for~ m_1\neq m_2
+$$
+
+$$
+\Rightarrow 1+m_1\cdot m_2 =0$$
+$$
+\Rightarrow m_1\cdot m_2 =-1
+$$
+\end{proof}
+
+
+\section{Poisson Probability Distribution}
+
+\begin{align*}
+\lim_{n\rightarrow\infty}\binom{n}{k}p^k(1-p)^k&=\lim_{n\rightarrow\infty}\frac{n!}{(n-k)!k!}p^k(1-p)^{n-k},\qquad \lambda=np\\
+&=\lim_{n\rightarrow\infty}\frac{n!}{(n-k)!k!}\biggl(\frac{\lambda}{n}\biggl)^k \biggl(1-\frac{\lambda}{n}\biggl)^{n-k}\\
+&=\lim_{n\rightarrow\infty}\frac{n!}{(n-k)!k!}\biggl(\frac{\lambda^k}{n^k}\biggl) \biggl(1-\frac{\lambda}{n}\biggl)^{n}\biggl(1-\frac{\lambda}{n}\biggl)^{-k}\\
+&=\lim_{n\rightarrow\infty}\frac{n!}{(n-k)!n^k}\biggl(\frac{\lambda^k}{k!}\biggl) \lim_{n\rightarrow\infty} \biggl(1-\frac{\lambda}{n}\biggl)^{n}\lim_{n\rightarrow\infty}\biggl(1-\frac{\lambda}{n}\biggl)^{-k}\\
+&=\frac{\lambda^k}{k!}\lim_{n\rightarrow\infty}\frac{n!}{(n-k)!n^k} \lim_{n\rightarrow\infty} \biggl(1-\frac{\lambda}{n}\biggl)^{n}\lim_{n\rightarrow\infty}\biggl(1-\frac{\lambda}{n}\biggl)^{-k}\\
+&=\frac{\lambda^k}{k!}\biggl(\lim_{n\rightarrow\infty}\frac{\overbrace{n(n-1)\cdots(n-k+1)}^{k~factors}}{(n^k)}\biggl) e^{-\lambda}\cdot 1\\
+&=\frac{\lambda^ke^{-\lambda}}{k!}
+\end{align*}
+\section{Goldbach on prime}
+
+\begin{Lemma}{Goldbach}{}\label{lem177}
+The Fermat numbers $F_n=2^{2^n}+1$ are pairwise relatively prime.
+\end{Lemma}
+
+\begin{proof}
+It's easy to show by induction that the following recursion holds
+\begin{align*}
+\prod_{k=0}^{n-1}F_k=F_{n}-2
+\end{align*}
+This means that if $d$ divides both $F_k \& F_n$ (with $k<n$), then $d$ also divides $F_{n}-2$; so $d$ divides $2$. But every Fermat number is odd. So $d$ is $1$.\\
+To prove the recursion we use induction on $n$. For $n=1$ we have $F_0=3$ and $F_1-2=3$. With induction we now conclude that
+\begin{align*}
+\prod_{k=0}^{n}F_k &=\biggl( \prod_{k=0}^{n-1}F_k\biggl)F_n\\
+                   &=(F_n-2)F_n\tag{Induction hypothesis}\\
+                   &=(2^{2^n}-1)(2^{2^n}+1)=(2^{2^{n+1}}-1)=F_{n+1}-2
+\end{align*}
+
+\end{proof}
+
+\begin{Theorem}{Goldbach}{}
+There are infinitely many primes.
+\end{Theorem}
+
+\begin{proof}
+Choose a prime divisor $p_n$ of each Fermat number $F_n$.
+By (\ref{lem177}) we know these primes are all distinct, showing that there are  infinitely many primes.
+\end{proof}
+
+\section{More on Irrationals}
+
+\begin{enumerate}
+  \item An irrational number to an irrational power may be rational.
+\begin{proof}
+ To prove this, we need only give an example $a^b$ where $a$ and $b$ are irrational and $a^b$ rational.
+ If\footnote{In fact, $\sqrt{2}^{\sqrt{2}}$ is irrational, since it is the square root of the \textbf{Gelfand-Schneider} number $2^{\sqrt{2}}$, which is known to be transcendental.[Claudi Charming Proofs pp. 35]} $\sqrt{2}^{\sqrt{2}}$ is rational, then it is our example. If $\sqrt{2}^{\sqrt{2}}$ is irrational, then $(\sqrt{2}^{\sqrt{2}})^{\sqrt{2}}$ is our example.
+\end{proof}
+  \item An irrational number to an irrational power may be irrational.
+\begin{proof}
+If $\sqrt{2}^{\sqrt{2}}$ is irrational, then it is our example. If $\sqrt{2}^{\sqrt{2}}$ is rational, then $\sqrt{2}^{\sqrt{2}+1}=\sqrt{2}^{\sqrt{2}}+\sqrt{2}$ is our example.
+\end{proof}
+\end{enumerate}
+
+
+%----------------------------------------------------------------------------------------
+%	BIBLIOGRAPHY
+%----------------------------------------------------------------------------------------
+\bibliographystyle{unsrt} % {unsrt} is to sort in order {plain}
+\bibliography{bibliography}
+%\addcontentsline{toc}{part}{\numberline{}Bibliography}
+%----------------------------------------------------------------------------------------
+%	INDEX
+%----------------------------------------------------------------------------------------
+
+%%%%%%%%%%%%%%%%%%%%%%
+%% Back cover
+%%%%%%%%%%%%%%%%%%%%%%
+
+\cleartoverso
+
+%% Temporarily enlarge this page to push
+%% down the bottom margin
+\enlargethispage{3\baselineskip}
+\thispagestyle{empty}
+%\pagecolor[HTML]{0C0303}
+\pagecolor[HTML]{0E0407}
+
+\begin{center}
+\begin{minipage}{.8\textwidth}
+\color{Cornsilk}\Large\bfseries
+
+\begin{center}
+\fbox{\parbox{0.7\linewidth}{
+\begin{align*}
+\frac{a+b^n}{n}=x,\qquad \text{ God exists!}
+\end{align*}
+}}
+\end{center}
+\medskip
+\begin{center}
+\textbf{\Huge{\textit{Euler Hilarious Triumph}}}\\
+\medskip
+Once at the Catherine's court\\
+The great Euler face Didrot\\
+Didrot was a French atheist\\
+Who claims "God doesn't exist"\\
+He was preaching this doctrine\\
+To the youth's of Lenin\\
+Though the princes Catherine\\
+Was very annoyed by this doctrine\\
+Thus, she asked for Euler's help\\
+To get rid of Didrot\\
+Hence, Euler appear in the court\\
+And said $\ldots$\\
+A plus B raise $n$ the whole over $n$ is equal to $x$\\
+That implies God existence!\\
+Didrot was poooooor at Math's\\
+On the next day he returned to Paris.
+   \end{center}
+\begin{flushright}
+-Miliyon T.
+\end{flushright}
+
+\end{minipage}
+\end{center}
+
+\vspace*{\stretch{1}}
+
+\begin{center}
+\colorbox{white}{\EANisbn[SC4]}
+
+\vspace*{\baselineskip}
+
+\textbf{\textcolor{LightGoldenrod!50!Gold}{Addis Ababa University \textbullet\ \texttt{http://www.aau.edu.et}}}
+
+\vspace*{\baselineskip}
+
+\textbf{\textcolor{LightGoldenrod}{Cover Illustration by Miliyon T. \textbullet\ \texttt{http://www.albohessab.weebly.com}}}
+\end{center}
+
+\end{document}

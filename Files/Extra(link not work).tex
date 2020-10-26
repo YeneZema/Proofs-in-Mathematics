@@ -1,0 +1,379 @@
+\chapter{Bernoulli Numbers}
+\renewcommand\chapterillustration{Bernoulli}
+
+\begin{defn}\label{defb}
+Setting $B_0=1$ Bernoulli numbers\footnote{By convention if $B_1=\frac{-1}{2}$, the given Bernoulli sequence is called \textbf{first Bernoulli numbers} and \textbf{second Bernoulli numbers} if $B_1=\frac{1}{2}$.} are defined
+
+\begin{align}
+\sum_{j=0}^m\binom{m+1}{j}B_j=0
+\end{align}
+
+\end{defn}
+One can also define the Bernoulli numbers\footnote{Discovered by Jacob Bernoulli($1654-1705$) and discussed by him in a posthumous work \textit{Ars Conjectandi}(1713).} using Pascal's triangle
+\begin{defn}\label{defb2}
+
+\begin{align*}
+B_0&=1\\
+B_2+2B_1+1&=B_2\\
+B_3+3B_2+  3B_1+1&=B_3\\
+B_4  +4B_3+6B_2+  4B_1+1&=B_4\\
+B_5+5B_4  +10B_3+10B_2+ 5B_1+1&=B_5\\
+B_6+ 6B_5+ 15B_4+ 20B_3+ 15B_2+ 6B_1+1&=B_6\\
+B_7+7B_6+21B_5+35B_4+35B_3+21B_2+7B_1+ 1&=B_7\\
+&\vdots
+\end{align*}
+
+\end{defn}
+
+\begin{defn}
+Pascal's triangle is a  triangular array of the  binomial coefficients. It is named after the French mathematician Blaise Pascal. Pascal's triangle determines the coefficients which arise in  binomial expansions. \\
+For an example, consider the expansion
+$$
+(x+y)^7 = x^7+7x^6y+21x^5y^2+35x^4y^3+35x^3y^4+21x^2y^5+7xy^6+y^7
+$$
+Notice the coefficients are the numbers in row two of Pascal's triangle: 1, 7, 21, 35, 35, 21, 7, 1. In general, when a binomial like $x+y$ is raised to a positive integer power we have:
+\begin{equation}
+(x+y)^n=a_0 x^n+a_1 x^{n-1} y+a_2 x^{n-2} y^2+...+a_{n-1}xy^{n-1}+a_ny^n
+\end{equation}
+where the coefficients $a_i$ in this expansion are precisely the numbers on row n of Pascal's triangle.
+\end{defn}
+\subsection{Pascal Tree}
+\centering
+\begin{tikzpicture}[x=11.8mm,y=8mm]
+  % some colors
+  \colorlet{even}{cyan!60!black}
+  \colorlet{odd}{orange!100!black}
+  \colorlet{links}{red!70!black}
+  \colorlet{back}{yellow!20!white}
+  % some styles
+  \tikzset{
+    box/.style={
+      minimum height=5mm,
+      inner sep=.7mm,
+      outer sep=0mm,
+      text width=10mm,
+      text centered,
+      font=\small\bfseries\sffamily,
+      text=#1!50!black,
+      draw=#1,
+      line width=.25mm,
+      top color=#1!5,
+      bottom color=#1!40,
+      shading angle=0,
+      rounded corners=2.3mm,
+      drop shadow={fill=#1!40!gray,fill opacity=.8},
+      rotate=0,
+    },
+    link/.style={-latex,links,line width=.3mm},
+    plus/.style={text=links,font=\footnotesize\bfseries\sffamily},
+  }
+  % Pascal's triangle
+  % row #0 => value is 1
+  \node[box=odd] (p-0-0) at (0,0) {1};
+  \foreach \row in {1,...,14} {
+     % col #0 =&gt; value is 1
+    \node[box=odd] (p-\row-0) at (-\row/2,-\row) {1};
+    \pgfmathsetmacro{\value}{1};
+    \foreach \col in {1,...,\row} {
+      % iterative formula : val = precval * (row-col+1)/col
+      % (+ 0.5 to bypass rounding errors)
+      \pgfmathtruncatemacro{\value}{\value*((\row-\col+1)/\col)+0.5};
+      \global\let\value=\value
+      % position of each value
+      \coordinate (pos) at (-\row/2+\col,-\row);
+      % odd color for odd value and even color for even value
+      \pgfmathtruncatemacro{\rest}{mod(\value,2)}
+      \ifnum \rest=0
+        \node[box=even] (p-\row-\col) at (pos) {\value};
+      \else
+        \node[box=odd] (p-\row-\col) at (pos) {\value};
+      \fi
+      % for arrows and plus sign
+      \ifnum \col<\row
+        \node[plus,above=0mm of p-\row-\col]{+};
+        \pgfmathtruncatemacro{\prow}{\row-1}
+        \pgfmathtruncatemacro{\pcol}{\col-1}
+        \draw[link] (p-\prow-\pcol) -- (p-\row-\col);
+        \draw[link] ( p-\prow-\col) -- (p-\row-\col);
+      \fi
+    }
+  }
+  \begin{pgfonlayer}{background}
+    % filling and drawing with the same color to enlarge background
+    \path[draw=back,fill=back,line width=5mm,rounded corners=2.5mm]
+    (  p-0-0.north west) -- (  p-0-0.north east) --
+    (p-14-14.north east) -- (p-14-14.south east) --
+    ( p-14-0.south west) -- ( p-14-0.north west) --
+    cycle;
+  \end{pgfonlayer}
+\end{tikzpicture}
+\subsection{Pascal Identity}
+\begin{align}\label{pascali}
+\binom{n}{k}+\binom{n}{k-1}=\binom{n+1}{k}
+\end{align}
+
+\begin{proof}
+
+\begin{align*}
+\binom{n}{k}+\binom{n}{k-1}&=\frac{n!}{(n-k)!k!}+\frac{n!}{(n-(k-1))(n-(k-1))!(k-1)k!}\\
+                           &=\frac{(n-(k-1))(k-1)n!+n!}{(n-(k-1) )(n-(k-1) )!(k-1)k!}\\
+                           &=\frac{((n-(k-1))(k-1)+1)n!}{(n-(k-1) )(n-(k-1))!(k-1)k!}
+                            =\frac{(n+1)!}{(n+1-k)!(k!)}
+                            =\binom{n+1}{k}
+\end{align*}
+
+\end{proof}
+\section{How to Compute $B_n$'s}
+\begin{flushleft}
+Using definition (\ref{defb2}) it is easy to compute that
+\end{flushleft}
+\begin{align}
+B_0=1,\quad B_1=\frac{-1}{2},\quad B_2=\frac {1}{6},\quad B_3 = 0,\quad B_4 =\frac{-1}{30},\quad B_5 = 0,\quad B_6 =\frac{1}{42},\cdots
+\end{align}
+
+\section{Some Facts}
+\begin{lem}[Binomial Convolution]\label{lembc}
+Let $f(z)=\sum_{n\ge0}\frac{a_n}{n!}z^n, g(z)=\sum_{n\ge0}\frac{b_n}{n!}z^n$ and $h(z)=f(z)*g(z)$.
+Then there exists $d_n$ such that
+\begin{align}
+h(z)=\sum_{n\ge0}\frac{d_n}{n!}z^n,\qquad \text{ with } d_n=\sum_{k=0}^{n}\binom{n}{k}a_{k}b_{n-k}
+\end{align}
+
+\begin{proof}
+Multiplying $f(z)$ and $g(z)$ gives us
+\begin{align*}
+\biggl(\frac{a_0}{0!}z^0+\frac{a_1}{1!}z^1+\frac{a_2}{2!}z^2+\cdots\biggl)\biggl(\frac{b_0}{0!}z^0+\frac{b_1}{1!}z^1+\frac{b_2}{2!}z^2+\cdots\biggl)
+\end{align*}
+After expanding and regrouping we would get
+\begin{align}\label{two}
+\frac{a_0b_0}{0!0!}z^0+\biggl(\frac{a_0b_1}{0!1!}+\frac{a_1b_0}{1!0!}\biggl)z^1+\biggl(\frac{a_0b_2}{0!2!}+\cdots+\frac{a_2b_0}{2!0!}\biggl)z^2+\cdots
+\end{align}
+If we let $c_n$ to be the coefficient of $z^n$. For example $c_0=\frac{a_0b_0}{0!0!}$. Then we have the following formula
+\begin{align}\label{three}
+c_n=\sum_{k=0}^{n}\frac{a_kb_{n-k}}{k!(n-k)!}
+\end{align}
+Using (\ref{two}) and (\ref{three}) we write $h(z)$ as the following sum
+\begin{align}\label{five}
+h(z)=\sum_{n\ge0}c_nz^n
+\end{align}
+Now let's define a value $d_n$ such that
+\begin{align*}
+d_n&=n!c_n=n!\sum_{k=0}^{n}\frac{a_kb_{n-k}}{k!(n-k)!}\\
+&=\sum_{k=0}^{n}\frac{n!a_kb_{n-k}}{k!(n-k)!}\\
+&=\sum_{k=0}^{n}\binom{n}{k}a_kb_{n-k}
+\end{align*}
+This gives us that
+\begin{align}\label{six}
+\frac{d_n}{n!}=c_n
+\end{align}
+Substituting (\ref{six}) on (\ref{five}) completes the proof.
+\begin{align*}
+h(z)=\sum_{n\ge0}\frac{d_n}{n!}z^n,\qquad \text{ with } d_n=\sum_{k=0}^{n}\binom{n}{k}a_{k}b_{n-k}
+\end{align*}
+
+\end{proof}
+
+\end{lem}
+
+\section{Generating function}
+
+\begin{thm}[Generating function for Bernoulli Numbers]\label{thmg}
+
+\begin{align*}
+\frac{z}{e^z-1} \text{ is a generating function for Bernoulli numbers.}
+\end{align*}
+\end{thm}
+
+\begin{proof}
+Let
+\begin{align}
+G(z)=\sum_{n\ge0}\frac{B_n}{n!}z^n,\qquad \text{ where } B_n \text{ stands for }n^{th} \text{ Bernoulli number.}
+\end{align}
+Multiply both sides by $e^z$
+
+\begin{align}
+e^zG(z)&=\sum_{n\ge0}\frac{z^n}{n!}\cdot\sum_{n\ge0}\frac{B_n}{n!}z^n\\
+&=\sum_{n\ge0}\biggl( \sum_{k=0}^{n}\binom{n}{k}B_k\biggl)\frac{z^n}{n!}\qquad \text{ by lemma } (\ref{lembc}).\label{res}
+\end{align}
+Now, by our definition of the Bernoulli number in (\ref{defb})
+
+\begin{align*}
+\sum_{j=0}^m\binom{m+1}{j}B_j=0\qquad \text{ with } B_0=1.
+\end{align*}
+If we set $n=m+1$ and add $B_n$ to both sides, then we have
+\begin{align}
+\sum_{j=0}^{n-1}\binom{n}{j}B_j+B_n=\sum_{j=0}^{n}\binom{n}{j}B_j=0+B_n=B_n
+\end{align}
+or $B_n+1$ in the case where $n=m+1=1$.\\
+This enables us to simplify the result in (\ref{res}) to get
+\begin{align}
+e^zG(z)=z+\sum_{n\ge0}B_n\frac{z^n}{n!}=z+G(z)
+\end{align}
+N.B. The $z$ at the bottom comes from the fact that at $n=1$, our result is
+$$(B_1+1)\frac{z^1}{1!}=\frac{B_1}{1!}z^1+z$$
+If we subtract $G(z)$ from both sides, we get
+\begin{align*}
+e^zG(z)-G(z)=z\\
+G(z)(e^z-1)=z
+\end{align*}
+Dividing both sides by $e^z-1$ gives us
+\begin{align}
+G(z)=\frac{z}{e^z-1}
+\end{align}
+
+\end{proof}
+\section{Why the  odds vanish?}
+\begin{cor}
+$B_{2i+1}=0$ if $i\ge1$.
+\begin{proof}
+From theorem (\ref{thmg}) we have
+\begin{align*}
+\frac{z}{e^z-1}=\sum_{n\ge0}B_n\frac{z^n}{n!}
+\end{align*}
+Then using the fact that $B_1=-1/2$, we have the following
+\begin{align}\label{iden}
+\sum_{\substack{n\ge1\\{n\neq 1}}}B_n\frac{z^n}{n!}=\frac{z}{e^z-1}-\frac{z}{2}
+\end{align}
+Now, look closely at the following algebraic simplification
+\begin{align*}
+\frac{z}{e^z-1}-\frac{z}{2}&=\frac{2z+z(e^z-1)}{2(e^z-1)}\\
+&=\biggl(\frac{z}{2}\biggl)\frac{(e^z+1)}{(e^z-1)}\\
+&=\biggl(\frac{z}{2}\biggl)\frac{(e^z+1)}{(e^z-1)}*\biggl(\frac{e^{-z/2}}{e^{-z/2}}\biggl)\\
+&=\biggl(\frac{z}{2}\biggl)\biggl(\frac{e^{z/2}+e^{-z/2}}{e^{z/2}-e^{-z/2}}\biggl)
+\end{align*}
+If we replace $z$ by $-z$ in our final result, the identity remain unchanged($\frac{z}{e^z-1}-\frac{z}{2}$ is even function).
+\begin{align*}
+\biggl(\frac{-z}{2}\biggl)\biggl(\frac{e^{-z/2}+e^{-(-z/2)}}{e^{-z/2}-e^{-(-z/2)}}\biggl)=\biggl(\frac{-z}{2}\biggl)
+\biggl(\frac{e^{-z/2}+e^{z/2}}{e^{-z/2}-e^{z/2}}\biggl)=\biggl(\frac{z}{2}\biggl)\biggl(\frac{e^{z/2}+e^{-z/2}}{e^{z/2}
+-e^{-z/2}}\biggl)
+\end{align*}
+But this means that the same must hold true for $ \sum_{\substack{n\ge1\\{n\neq 1}}}B_n\frac{z^n}{n!}$. Since in (\ref{iden}), we showed that they are equal functions. So that we have
+
+\begin{align*}
+\sum_{\substack{n\ge1\\{n\neq 1}}}B_n\frac{z^n}{n!}=\sum_{\substack{n\ge1\\{n\neq 1}}}B_n\frac{(-z)^n}{n!}=\sum_{\substack{n\ge1\\{n\neq 1}}}(-1)^nB_n\frac{z^n}{n!}
+\end{align*}
+Matching up each of the terms according to powers of $z^n$, this gives us
+\begin{align}
+B_n=(-1)^nB_n
+\end{align}
+Thus, $B_n=0$, whenever $n$ is odd. Since we have excluded the case $n=1$, we conclude that
+\begin{align*}
+B_{2i+1}=0 \text{ if } i\ge1.
+\end{align*}
+
+\end{proof}
+
+\end{cor}
+\section{Simple but Elegant Application}
+\subsection{Faulhaber's Formula}
+
+\begin{align}
+\sum_{k=0}^{m-1}k^n=\frac{1}{n+1}\sum_{k=0}^{n}\binom{n+1}{k}B_k m^{n+1-k}
+\end{align}
+
+\chapter{Zeta function}
+\renewcommand\chapterillustration{Riemann}
+
+\begin{defn} The zeta function is defined
+\[
+\zeta (s)=\sum_{n=0}^\infty \frac {1}{n^s}
+\]
+for each real values of $s$ with $s>1$.
+\end{defn}
+\begin{flushleft}
+  Euler consider $s \in \mathbb{Z} $ and Riemann extend it to $s\in \mathbb{C}.$
+\end{flushleft}
+\section{The sum of reciprocal of prime diverges}
+
+\begin{flushleft}
+  In order to prove that the sum of reciprocal of primes diverge, we need to show the following holds.
+\end{flushleft}
+\begin{lem}\label{primediv0}
+The power series(\ref{primedivpower}) of $f(x)$ which is
+\[
+f(x)=\ln{\biggl(\frac{1}{1-x}\biggl)}
+\]
+is given by
+\[
+\sum_{n=1}^{\infty}\frac{x^n}{n}
+\]
+\end{lem}
+\begin{proof}
+$f(x)=\ln{\biggl(\frac{1}{1-x}\biggl)}$, the Maclaurine series of $f(x)$ is by definition(\ref{maclaurine})
+\[
+f(x)=\sum_{n=0}^{\infty}\frac{f^{(n)}(0)x^n}{n!}
+\]
+Now,
+\begin{align*}
+f^{(1)}(x)&=\frac{1}{1-x}           &\Rightarrow f^{(1)}(0)&=1\\
+f^{(2)}(x)&=\frac{1}{(1-x)^2}       &\Rightarrow f^{(2)}(0)&=1\\
+f^{(3)}(x)&=\frac{2}{(1-x)^3}       &\Rightarrow f^{(3)}(0)&=2\\
+f^{(4)}(x)&=\frac{2\cdot3}{(1-x)^4} &\Rightarrow f^{(4)}(0)&=2\cdot3\\
+          &\vdots                   &                      &\vdots\\
+f^{(n)}(x)&=\frac{(n-1)!}{(1-x)^n}  &\Rightarrow f^{(n)}(0)&=(n-1)!\\
+\end{align*}
+Hence,
+\begin{align*}
+f(x)=\sum_{n=0}^{\infty}\frac{f^{(n)}(0)x^n}{n!}=\sum_{n=0}^{\infty}\frac{(n-1)!x^n}{n!}=\sum_{n=0}^{\infty}\frac{x^n}{n}
+\end{align*}
+
+\end{proof}
+\begin{thm}
+The sum of reciprocal of primes
+\[
+\sum_{p}p\to \infty
+\]
+diverges(converges to $\infty$).
+\end{thm}
+\begin{proof}
+Because of the fact that $\lim_{s\rightarrow 1^+}\zeta(s)=\infty$, it follows that
+\begin{align}\label{primediv1}
+\lim_{s\rightarrow 1^+}\ln(\zeta(s))=\infty
+\end{align}
+But,
+\begin{align*}
+\ln(\zeta(s))&=\ln\biggl(\sum_{n=1}^{\infty}\frac{1}{n^s}\biggl)\\
+             &=\ln\biggl(\prod_{p}\frac{1}{1-1/p^s}\biggl)=\sum_{p}\ln\biggl(\frac{1}{1-1/p^s}\biggl)\\
+             &=\sum_{p}\sum_{n=1}^{\infty}\frac{1}{np^{sn}}\tag{lemma (\ref{primediv0})}\\
+             &=\sum_{p}\biggl(\frac{1}{p^s}+\sum_{n=2}^{\infty}\frac{1}{np^{sn}}\biggl)
+\end{align*}
+Hence,
+\[
+\ln(\zeta(s))=\sum_{p}\frac{1}{p^s}+\sum_{p}\sum_{n=2}^{\infty}\frac{1}{np^{sn}}
+\]
+Thus,
+\[
+\ln(\zeta(s))<\sum_{p}\frac{1}{p^s}+\sum_{p}\sum_{n=2}^{\infty}\frac{1}{p^{sn}}
+\]
+From geometric sum, we have
+\[
+\sum_{n=2}^{\infty}\frac{1}{p^{sn}}=\frac{1}{p^{2s}-p^s}
+\]
+Therefore, for $s>1$, we obtain that
+\begin{align*}
+\ln(\zeta(s))&<\sum_{p}\frac{1}{p^s}+\sum_{p}\frac{1}{p^{2s}-p^s}\\
+             &=\sum_{p}\frac{1}{p^s}+\sum_{p}\frac{1}{p^{s}(p^s-1)}\\
+             &<\sum_{p}\frac{1}{p^s}+\sum_{n=2}^{\infty}\frac{1}{n^{s}(n^s-1)}\\
+             &<\sum_{p}\frac{1}{p^s}+\sum_{n=2}^{\infty}\frac{1}{n(n-1)}\\
+             &<\sum_{p}\frac{1}{p^s}+\sum_{n=2}^{\infty}\frac{1}{(n-1)^2}
+\end{align*}
+
+Thus, it yields
+\[
+\lim_{s\rightarrow 1^+}\ln(\zeta(s))\leq \lim_{s\rightarrow 1^+}\biggl(\sum_{p}\frac{1}{p^s} +\sum_{n=2}^{\infty}\frac{1}{(n-1)^2}\biggl)
+\]
+and thus, by (\ref{primediv1}), it is evident that
+\[
+\lim_{s\rightarrow 1^+}\biggl(\sum_{p}\frac{1}{p^s} +\sum_{n=2}^{\infty}\frac{1}{(n-1)^2}\biggl)=\infty
+\]
+However, the series
+\[
+\sum_{n=2}^{\infty}\frac{1}{(n-1)^2}
+\]
+converges to a real number. Hence,
+$$
+\lim_{s\rightarrow 1^+}\sum_{p}\frac{1}{p^s}=\infty
+$$
+Therefore,
+$$ \sum_{p}\frac{1}{p}=\infty $$
+\end{proof}
